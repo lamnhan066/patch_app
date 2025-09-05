@@ -2,9 +2,17 @@ import 'package:flutter/foundation.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
 import 'package:terminate_restart/terminate_restart.dart';
 
+/// A helper class that manages code push updates and restarts.
+///
+/// Typical usage:
+/// ```dart
+/// await PatchApp.instance.update(
+///   confirmDialog: confirmationRestart,
+/// );
+/// ```
 class PatchApp {
   /// Singleton instance of [PatchApp].
-  static PatchApp instance = PatchApp._();
+  static final PatchApp instance = PatchApp._();
 
   PatchApp._()
       : _updater = ShorebirdUpdater(),
@@ -13,88 +21,94 @@ class PatchApp {
   final ShorebirdUpdater _updater;
   final TerminateRestart _terminateRestart;
 
-  bool _needToRestart = false;
+  bool _isInitialized = false;
   bool _isUpdating = false;
   DateTime? _lastCheck;
+  bool _debug = false;
 
-  /// Initializes the PatchApp instance.
+  /// Checks for updates and applies them if available.
   ///
-  /// This method should be called once during the app's startup.
-  Future<void> initialize() async {
+  /// - [confirmDialog] is a function that shows a confirmation dialog.
+  ///   It should return `true` if the app may restart, `false` otherwise.
+  /// - [minInterval] specifies how often updates can be checked.
+  /// - [onUpdateFailed] is an optional callback invoked if an update fails.
+  /// - [debug] enables debug logging if set to `true`.
+  Future<void> update({
+    required Future<bool> Function() confirmDialog,
+    Duration minInterval = const Duration(minutes: 15),
+    void Function(Object error)? onUpdateFailed,
+    bool debug = false,
+  }) async {
+    _debug = debug;
     if (!_updater.isAvailable) {
+      _log('[PatchApp] Updater unavailable, initialization skipped.');
       return;
     }
 
-    _terminateRestart.initialize();
-  }
+    if (!_isInitialized) {
+      _terminateRestart.initialize();
+      _isInitialized = true;
+    }
 
-  Future<void> update({
-    /// A function that shows a confirmation dialog to the user.
-    ///
-    /// If the user confirms, the app will restart to apply the update.
-    /// If the user cancels, the app will continue running without restarting.
-    ///
-    /// Use [confirmationRestart()] for a default implementation.
-    required Future<bool> Function() confirmDialog,
-    final Duration minInterval = const Duration(minutes: 15),
-    final bool debug = false,
-  }) async {
     final now = DateTime.now();
     if (_lastCheck != null && now.difference(_lastCheck!) < minInterval) {
+      _log('[PatchApp] Skipping update check (too soon).');
       return;
     }
     _lastCheck = now;
 
-    if (_isUpdating) return;
-    _isUpdating = true;
-
-    void printDebug(String message) {
-      if (debug) {
-        debugPrint(message);
-      }
-    }
-
-    printDebug('[Patch App] Checking for updates...');
-
-    if (!_updater.isAvailable) {
-      printDebug('[Patch App] Unavailable');
-      _isUpdating = false;
+    if (_isUpdating) {
+      _log('[PatchApp] Update already in progress, skipping.');
       return;
     }
 
-    if (!_needToRestart) {
+    _isUpdating = true;
+    try {
+      _log('[PatchApp] Checking for updates...');
+
       final status = await _updater.checkForUpdate();
 
       switch (status) {
         case UpdateStatus.unavailable:
-          printDebug('[Patch App] Unavailable');
-          break;
+          _log('[PatchApp] No updates available.');
+          return;
         case UpdateStatus.upToDate:
-          printDebug('[Patch App] Up to date');
-          break;
+          _log('[PatchApp] App is up to date.');
+          return;
         case UpdateStatus.outdated:
-          printDebug('[Patch App] Outdated, updating...');
+          _log('[PatchApp] Update available, downloading...');
           try {
             await _updater.update();
-            _needToRestart = true;
-            printDebug('[Patch App] Updated successfully, restart required');
+            _log('[PatchApp] Update applied. Restart required.');
           } on UpdateException catch (e) {
-            printDebug('[Patch App] Failed to apply update: $e');
+            _log('[PatchApp] Update failed: $e');
+            onUpdateFailed?.call(e);
+            return;
+          } catch (e) {
+            _log('[PatchApp] Unexpected error during update: $e');
+            onUpdateFailed?.call(e);
+            return;
           }
           break;
         case UpdateStatus.restartRequired:
-          printDebug('[Patch App] Restart required');
-          _needToRestart = true;
+          _log('[PatchApp] Restart required.');
           break;
       }
-    }
 
-    if (_needToRestart && await confirmDialog()) {
-      await _terminateRestart.restartApp(
-        options: TerminateRestartOptions(terminate: true),
-      );
+      if (await confirmDialog()) {
+        _log('[PatchApp] Restarting app...');
+        await _terminateRestart.restartApp(
+          options: TerminateRestartOptions(terminate: true),
+        );
+      }
+    } finally {
+      _isUpdating = false;
     }
+  }
 
-    _isUpdating = false;
+  void _log(String message) {
+    if (_debug) {
+      debugPrint(message);
+    }
   }
 }
