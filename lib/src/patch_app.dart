@@ -101,6 +101,9 @@ class PatchApp {
           options: TerminateRestartOptions(terminate: true),
         );
       }
+    } catch (e) {
+      _log('[PatchApp] Error during update process: $e');
+      onUpdateFailed?.call(e);
     } finally {
       _isUpdating = false;
     }
