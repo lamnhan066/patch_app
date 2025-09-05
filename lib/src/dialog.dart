@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+/// Displays a confirmation dialog to the user asking if they want to
+/// restart the app to apply an update.
 Future<bool> patchAppConfirmationDialog({
   required BuildContext context,
   String title = 'Restart to Update',

@@ -3,6 +3,7 @@ import 'package:shorebird_code_push/shorebird_code_push.dart';
 import 'package:terminate_restart/terminate_restart.dart';
 
 class PatchApp {
+  /// Singleton instance of [PatchApp].
   static PatchApp instance = PatchApp._();
 
   PatchApp._()
@@ -16,6 +17,9 @@ class PatchApp {
   bool _isUpdating = false;
   DateTime? _lastCheck;
 
+  /// Initializes the PatchApp instance.
+  ///
+  /// This method should be called once during the app's startup.
   Future<void> initialize() async {
     if (!_updater.isAvailable) {
       return;
