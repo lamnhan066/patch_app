@@ -80,6 +80,9 @@ Check for the update:
         @override
         void initState() {
             WidgetsBinding.instance.addObserver(this);
+            WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+                _patchApp();
+            });
             super.initState();
         }
 
@@ -92,10 +95,14 @@ Check for the update:
         @override
         void didChangeAppLifecycleState(AppLifecycleState state) {
             if (state == AppLifecycleState.resumed) {
-                PatchApp.instance.update(
-                    confirmDialog: () => patchAppConfirmationDialog(context),
-                );
+                _patchApp();
             }
+        }
+
+        void _patchApp() {
+            PatchApp.instance.update(
+                confirmDialog: () => patchAppConfirmationDialog(context),
+            );            
         }
 
         @override
