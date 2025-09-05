@@ -7,7 +7,7 @@ import 'package:terminate_restart/terminate_restart.dart';
 /// Typical usage:
 /// ```dart
 /// await PatchApp.instance.update(
-///   confirmDialog: confirmationRestart,
+///   confirmDialog: () => patchAppConfirmationDialog(context: context),
 /// );
 /// ```
 class PatchApp {
