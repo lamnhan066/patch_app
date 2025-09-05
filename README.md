@@ -93,7 +93,7 @@ Check for the update:
         void didChangeAppLifecycleState(AppLifecycleState state) {
             if (state == AppLifecycleState.resumed) {
                 PatchApp.instance.update(
-                    confirmDialog: () => confirmationRestart(context),
+                    confirmDialog: () => patchAppConfirmationDialog(context),
                 );
             }
         }
@@ -104,9 +104,3 @@ Check for the update:
         }
     }
     ```
-
-## Additional information
-
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.

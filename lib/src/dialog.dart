@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-Future<bool> confirmationRestart({
+Future<bool> patchAppConfirmationDialog({
   required BuildContext context,
   String title = 'Restart to Update',
   String content = 'A new update is available and has been downloaded.\n\n'
