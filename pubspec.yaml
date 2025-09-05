@@ -1,6 +1,6 @@
 name: patch_app
 description: "Patch the app by combining shorebird code push and terminate restart"
-version: 0.0.2
+version: 0.0.3
 homepage: https://github.com/lamnhan066/patch_app
 
 environment:
