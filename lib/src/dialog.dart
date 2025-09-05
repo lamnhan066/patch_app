@@ -11,58 +11,35 @@ Future<bool> patchAppConfirmationDialog({
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      backgroundColor: const Color(0xFF2A2A2A),
-      icon: const Icon(
+      icon: Icon(
         Icons.warning_amber_rounded,
         size: 32,
-        color: Colors.greenAccent,
+        color: ColorScheme.of(context).primary,
       ),
       title: Text(
         title,
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w600,
-        ),
+        style: TextStyle(fontWeight: FontWeight.w600),
       ),
-      content: Text(
-        content,
-        style: TextStyle(
-          color: Colors.grey[400],
-        ),
-      ),
+      content: Text(content),
       actions: [
-        TextButton.icon(
+        TextButton(
           onPressed: () => Navigator.pop(context, false),
-          icon: const Icon(
-            Icons.cancel_rounded,
-            size: 16,
-            color: Colors.grey,
-          ),
-          label: Text(
+          child: Text(
             cancelLabel,
             style: TextStyle(
-              color: Colors.grey,
               fontWeight: FontWeight.w500,
               letterSpacing: 1,
             ),
           ),
         ),
-        FilledButton.icon(
+        FilledButton(
           onPressed: () => Navigator.pop(context, true),
-          icon: const Icon(
-            Icons.refresh_rounded,
-            size: 16,
-          ),
-          label: Text(
+          child: Text(
             restartLabel,
             style: TextStyle(
               fontWeight: FontWeight.w500,
               letterSpacing: 1,
             ),
-          ),
-          style: FilledButton.styleFrom(
-            backgroundColor: Colors.greenAccent,
-            foregroundColor: Colors.black,
           ),
         ),
       ],
