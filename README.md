@@ -1,36 +1,109 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# Patch App
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+Patch the app muanually by combining [shorebird_code_push](https://pub.dev/packages/shorbird_code_push) and [terminate_restart](https://pub.dev/packages/terminate_restart)
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+- Check the patch from the shorebird server
+- Download it if it's available
+- Show an dialog to ask users for restarting
+- Restart if users press the accept button
 
 ## Getting started
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+### IOS
+
+Add this to `Info.plist`:
+
+    ```txt
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+            </array>
+            <key>CFBundleURLName</key>
+            <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+        </dict>
+    </array>
+    <key>NSUserNotificationAlertStyle</key>
+    <string>alert</string>
+    <key>NSUserNotificationUsageDescription</key>
+    <string>Notifications are used to restart the app when needed</string>
+    <key>BGTaskSchedulerPermittedIdentifiers</key>
+    <array>
+        <string>com.ahmedsleem.terminate_restart.restart</string>
+    </array>
+    ```
+
+### Android
+
+No specific configuration
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+Initialize:
 
-```dart
-const like = 'sample';
-```
+    ```dart
+    void main() {
+        WidgetsFlutterBinding.ensureInitialized();
+        PatchApp.instance.initialize();
+    }
+    ```
+
+Check for the update:
+
+    ```dart
+    class PageHome extends StatefulWidget {
+        const PageHome({super.key});
+
+        @override
+        PageHomeState createState() => PageHomeState();
+    }
+
+    class PageHomeState extends State<PageHome> with WidgetsBindingObserver {
+        @override
+        void initState() {
+            WidgetsBinding.instance.addObserver(this);
+            super.initState();
+        }
+
+        @override
+        void dispose() {
+            WidgetsBinding.instance.removeObserver(this);
+            super.dispose();
+        }
+
+        @override
+        void didChangeAppLifecycleState(AppLifecycleState state) {
+            if (state == AppLifecycleState.resumed) {
+                PatchApp.instance.update(
+                    confirmDialog: () => confirmationRestart(context),
+                );
+            }
+        }
+
+        @override
+        Widget build(BuildContext context) {
+            return Scaffold();
+        }
+    }
+    ```
 
 ## Additional information
 
