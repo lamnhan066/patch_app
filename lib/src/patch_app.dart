@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:patch_app/src/patch_result.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
 import 'package:terminate_restart/terminate_restart.dart';
 
@@ -6,7 +7,7 @@ import 'package:terminate_restart/terminate_restart.dart';
 ///
 /// Typical usage:
 /// ```dart
-/// await PatchApp.instance.update(
+/// await PatchApp.instance.checkAndUpdate(
 ///   confirmDialog: () => patchAppConfirmationDialog(context: context),
 /// );
 /// ```
@@ -32,18 +33,20 @@ class PatchApp {
   ///   It should return `true` if the app may restart, `false` otherwise.
   /// - [minInterval] sets the minimum duration between consecutive update checks.
   ///   By default, updates are checked at least 15 minutes apart.
-  /// - [onUpdateFailed] is an optional callback invoked if an update fails.
+  /// - [onError] is a callback that handles any errors during the update process.
+  ///   If [onError] is provided, the method will return [PatchResult.failed] on error.
+  ///   Otherwise, the error will be rethrown.
   /// - [debug] enables debug logging if set to `true`.
-  Future<void> check({
+  Future<PatchResult> checkAndUpdate({
     required Future<bool> Function() confirmDialog,
     Duration minInterval = const Duration(minutes: 15),
-    void Function(Object error)? onUpdateFailed,
+    void Function(Object error, StackTrace stack)? onError,
     bool debug = false,
   }) async {
     _debug = debug;
     if (!_updater.isAvailable) {
       _log('[PatchApp] Updater unavailable, initialization skipped.');
-      return;
+      return PatchResult.noUpdate;
     }
 
     if (!_isInitialized) {
@@ -54,42 +57,31 @@ class PatchApp {
     final now = DateTime.now();
     if (_lastCheck != null && now.difference(_lastCheck!) < minInterval) {
       _log('[PatchApp] Skipping update check (too soon).');
-      return;
+      return PatchResult.noUpdate;
     }
     _lastCheck = now;
 
     if (_isUpdating) {
       _log('[PatchApp] Update already in progress, skipping.');
-      return;
+      return PatchResult.noUpdate;
     }
 
     _isUpdating = true;
     try {
       _log('[PatchApp] Checking for updates...');
-
       final status = await _updater.checkForUpdate();
 
       switch (status) {
         case UpdateStatus.unavailable:
           _log('[PatchApp] No updates available.');
-          return;
+          return PatchResult.noUpdate;
         case UpdateStatus.upToDate:
           _log('[PatchApp] App is up to date.');
-          return;
+          return PatchResult.upToDate;
         case UpdateStatus.outdated:
           _log('[PatchApp] Update available, downloading...');
-          try {
-            await _updater.update();
-            _log('[PatchApp] Update applied. Restart required.');
-          } on UpdateException catch (e) {
-            _log('[PatchApp] Update failed: $e');
-            onUpdateFailed?.call(e);
-            return;
-          } catch (e) {
-            _log('[PatchApp] Unexpected error during update: $e');
-            onUpdateFailed?.call(e);
-            return;
-          }
+          await _updater.update();
+          _log('[PatchApp] Update applied. Restart required.');
           break;
         case UpdateStatus.restartRequired:
           _log('[PatchApp] Restart required.');
@@ -102,9 +94,15 @@ class PatchApp {
           options: TerminateRestartOptions(terminate: true),
         );
       }
-    } catch (e) {
+
+      return PatchResult.restartRequired;
+    } catch (e, stack) {
       _log('[PatchApp] Error during update process: $e');
-      onUpdateFailed?.call(e);
+      if (onError != null) {
+        onError(e, stack);
+        return PatchResult.failed;
+      }
+      rethrow;
     } finally {
       _isUpdating = false;
     }
