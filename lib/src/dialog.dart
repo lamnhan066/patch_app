@@ -8,7 +8,7 @@ Future<bool> patchAppConfirmationDialog({
   required BuildContext context,
   String title = 'Restart to Update',
   String content = 'A new update is available.\n\n'
-      'Please restart the app to apply the update?',
+      'Would you like to restart the app to apply the update?',
   String cancelLabel = 'CANCEL',
   String restartLabel = 'RESTART',
 
