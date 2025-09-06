@@ -1,113 +1,106 @@
 # Patch App
 
-Patch the app muanually by combining [shorebird_code_push](https://pub.dev/packages/shorbird_code_push) and [terminate_restart](https://pub.dev/packages/terminate_restart)
+Patch your Flutter app manually by combining [shorebird_code_push](https://pub.dev/packages/shorebird_code_push) and [terminate_restart](https://pub.dev/packages/terminate_restart).
 
 ## Features
 
-- Check the patch from the shorebird server
-- Download it if it's available
-- Show an dialog to ask users for restarting
-- Restart if users press the accept button
+- Check for patches from the Shorebird server
+- Download available patches
+- Prompt users with a dialog to restart the app
+- Restart the app if the user accepts
 
-## Getting started
+## Getting Started
 
-### IOS
+### iOS
 
-Add this to `Info.plist`:
+Add the following to your `Info.plist`:
 
-    ```txt
-    <key>CFBundleURLTypes</key>
-    <array>
-        <dict>
-            <key>CFBundleTypeRole</key>
-            <string>Editor</string>
-            <key>CFBundleURLSchemes</key>
-            <array>
-                <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-            </array>
-        </dict>
-        <dict>
-            <key>CFBundleURLSchemes</key>
-            <array>
-                <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-            </array>
-        </dict>
-        <dict>
-            <key>CFBundleURLSchemes</key>
-            <array>
-                <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-            </array>
-            <key>CFBundleURLName</key>
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
             <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-        </dict>
-    </array>
-    <key>NSUserNotificationAlertStyle</key>
-    <string>alert</string>
-    <key>NSUserNotificationUsageDescription</key>
-    <string>Notifications are used to restart the app when needed</string>
-    <key>BGTaskSchedulerPermittedIdentifiers</key>
-    <array>
-        <string>com.ahmedsleem.terminate_restart.restart</string>
-    </array>
-    ```
+        </array>
+    </dict>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+        </array>
+    </dict>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+        </array>
+        <key>CFBundleURLName</key>
+        <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    </dict>
+</array>
+<key>NSUserNotificationAlertStyle</key>
+<string>Alert</string>
+<key>NSUserNotificationUsageDescription</key>
+<string>Notifications are used to restart the app when needed</string>
+<key>BGTaskSchedulerPermittedIdentifiers</key>
+<array>
+    <string>com.ahmedsleem.terminate_restart.restart</string>
+</array>
+```
 
 ### Android
 
-No specific configuration
+No additional configuration required.
 
 ## Usage
 
-Initialize:
+Check for updates in your widget:
 
-    ```dart
-    void main() {
-        WidgetsFlutterBinding.ensureInitialized();
-        PatchApp.instance.initialize();
+```dart
+class App extends StatefulWidget {
+  const App({super.key});
+
+  @override
+  AppState createState() => AppState();
+}
+
+class AppState extends State<App> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    WidgetsBinding.instance.addObserver(this);
+    _patchApp();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _patchApp();
     }
-    ```
+  }
 
-Check for the update:
+  void _patchApp() {
+    PatchApp.instance.check(
+      confirmDialog: () => patchAppConfirmationDialog(context),
+      minInterval: const Duration(minutes: 15),
+    );
+  }
 
-    ```dart
-    class PageHome extends StatefulWidget {
-        const PageHome({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold();
+  }
+}
+```
 
-        @override
-        PageHomeState createState() => PageHomeState();
-    }
-
-    class PageHomeState extends State<PageHome> with WidgetsBindingObserver {
-        @override
-        void initState() {
-            WidgetsBinding.instance.addObserver(this);
-            WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-                _patchApp();
-            });
-            super.initState();
-        }
-
-        @override
-        void dispose() {
-            WidgetsBinding.instance.removeObserver(this);
-            super.dispose();
-        }
-
-        @override
-        void didChangeAppLifecycleState(AppLifecycleState state) {
-            if (state == AppLifecycleState.resumed) {
-                _patchApp();
-            }
-        }
-
-        void _patchApp() {
-            PatchApp.instance.update(
-                confirmDialog: () => patchAppConfirmationDialog(context),
-            );            
-        }
-
-        @override
-        Widget build(BuildContext context) {
-            return Scaffold();
-        }
-    }
-    ```
+> **Note:**  
+> If you encounter context-related errors, consider wrapping `_patchApp` inside `WidgetsBinding.instance.addPostFrameCallback`. Using the default `patchAppConfirmationDialog` is safe.
