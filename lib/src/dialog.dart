@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 /// Displays a confirmation dialog to the user asking if they want to
 /// restart the app to apply an update.
+///
+/// This dialog is safe when calling during the build phase (eg. in the `initState`).
 Future<bool> patchAppConfirmationDialog({
   required BuildContext context,
   String title = 'Restart to Update',
@@ -10,6 +12,10 @@ Future<bool> patchAppConfirmationDialog({
   String cancelLabel = 'CANCEL',
   String restartLabel = 'RESTART',
 }) async {
+  await WidgetsBinding.instance.endOfFrame;
+
+  if (!context.mounted) return false;
+
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
