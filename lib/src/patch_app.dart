@@ -30,10 +30,11 @@ class PatchApp {
   ///
   /// - [confirmDialog] is a function that shows a confirmation dialog.
   ///   It should return `true` if the app may restart, `false` otherwise.
-  /// - [minInterval] specifies how often updates can be checked.
+  /// - [minInterval] sets the minimum duration between consecutive update checks.
+  ///   By default, updates are checked at least 15 minutes apart.
   /// - [onUpdateFailed] is an optional callback invoked if an update fails.
   /// - [debug] enables debug logging if set to `true`.
-  Future<void> update({
+  Future<void> check({
     required Future<bool> Function() confirmDialog,
     Duration minInterval = const Duration(minutes: 15),
     void Function(Object error)? onUpdateFailed,
