@@ -94,7 +94,7 @@ class PatchApp {
   /// }
   /// ```
   void register(BuildContext context) {
-    checkAndUpdate(context);
+    checkAndUpdate(context).ignore();
     _listener = AppLifecycleListener(
       onResume: () => checkAndUpdate(context),
     );
@@ -180,16 +180,14 @@ class PatchApp {
           _log('[PatchApp] Update available, downloading...');
           await _updater.update();
           _log('[PatchApp] Update applied. Restart required.');
-          break;
         case UpdateStatus.restartRequired:
           _log('[PatchApp] Restart required.');
-          break;
       }
 
       if (context.mounted && await confirmDialog(context)) {
         _log('[PatchApp] Restarting app...');
         await _terminateRestart.restartApp(
-          options: TerminateRestartOptions(terminate: true),
+          options: const TerminateRestartOptions(),
         );
       }
 

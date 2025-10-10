@@ -33,7 +33,7 @@ Future<bool> patchAppConfirmationDialog({
         ),
         title: Text(
           title,
-          style: TextStyle(fontWeight: FontWeight.w600),
+          style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         content: Text(content),
         actions: [
@@ -42,7 +42,7 @@ Future<bool> patchAppConfirmationDialog({
               onPressed: () => Navigator.pop(context, false),
               child: Text(
                 cancelLabel,
-                style: TextStyle(
+                style: const TextStyle(
                   fontWeight: FontWeight.w500,
                   letterSpacing: 1,
                 ),
@@ -52,7 +52,7 @@ Future<bool> patchAppConfirmationDialog({
             onPressed: () => Navigator.pop(context, true),
             child: Text(
               restartLabel,
-              style: TextStyle(
+              style: const TextStyle(
                 fontWeight: FontWeight.w500,
                 letterSpacing: 1,
               ),
