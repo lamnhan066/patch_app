@@ -1,3 +1,8 @@
+## 0.1.1
+
+* feat: add Flutter example app integrating patch_app.
+* style: reformat dialog builder indentation.
+
 ## 0.1.0
 
 * **BREAKING CHANGE:**
@@ -11,7 +16,7 @@
 
   ```dart
   await PatchApp.instance.checkAndUpdate(
-      confirmDialog: () => patchAppConfirmationDialog(context),
+      confirmDialog: () => patchAppConfirmationDialog(context: context),
       minInterval: const Duration(minutes: 15),
       onError: (error, stack) {
         debugPrint("Update failed: $error");
@@ -23,7 +28,7 @@
   
   ```dart
   PatchApp(
-    confirmDialog: (context) => patchAppConfirmationDialog(context),
+    confirmDialog: (context) => patchAppConfirmationDialog(context: context),
     minInterval: const Duration(minutes: 15),
     onError: (error, stack) => debugPrint('Update failed: $error'),
   ).checkAndUpdate(context);
