@@ -1,81 +1,50 @@
 # Patch App
 
-A lightweight helper to **patch your Flutter app at runtime** using [shorebird\_code\_push](https://pub.dev/packages/shorebird_code_push) and [terminate\_restart](https://pub.dev/packages/terminate_restart).
+A lightweight helper to **patch your Flutter app at runtime** using [shorebird_code_push](https://pub.dev/packages/shorebird_code_push) and [terminate_restart](https://pub.dev/packages/terminate_restart).
 
-It handles:
-
-* Checking for updates from Shorebird
-* Downloading and applying patches
-* Prompting the user with a restart dialog
-* Restarting the app safely when accepted
+It automatically checks for Shorebird updates, applies patches, and restarts your app safely when accepted.
 
 ---
 
-## ✨ Features
+## Features
 
-* 🔍 Check for patches from the Shorebird server
-* ⬇️ Download and apply updates on the fly
-* 💬 Show a customizable confirmation dialog
-* 🔄 Restart the app with one line of code
-* ⏱️ Built-in safeguard (`minInterval`) to avoid excessive update checks
-* ⚠️ Error handling via callback or enum result
+* Check and apply Shorebird patches dynamically
+* Show a customizable restart confirmation dialog
+* Restart the app safely with one line of code
+* Built-in `minInterval` to limit check frequency
+* Optional error handling via callback or `PatchResult`
 
 ---
 
-## ⚙️ Getting Started
+## Setup
 
-### iOS Setup
+### iOS
 
-Add the following to your **`Info.plist`**:
+Add the following to your **`Info.plist`** to enable restarts with [terminate_restart](https://pub.dev/packages/terminate_restart):
 
 ```xml
 <key>CFBundleURLTypes</key>
 <array>
-    <dict>
-        <key>CFBundleTypeRole</key>
-        <string>Editor</string>
-        <key>CFBundleURLSchemes</key>
-        <array>
-            <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-        </array>
-    </dict>
-    <dict>
-        <key>CFBundleURLSchemes</key>
-        <array>
-            <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-        </array>
-    </dict>
-    <dict>
-        <key>CFBundleURLSchemes</key>
-        <array>
-            <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-        </array>
-        <key>CFBundleURLName</key>
-        <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-    </dict>
-</array>
-
-<key>NSUserNotificationAlertStyle</key>
-<string>Alert</string>
-
-<key>NSUserNotificationUsageDescription</key>
-<string>Notifications are used to restart the app when needed</string>
-
-<key>BGTaskSchedulerPermittedIdentifiers</key>
-<array>
-    <string>com.ahmedsleem.terminate_restart.restart</string>
+  <dict>
+    <key>CFBundleTypeRole</key>
+    <string>Editor</string>
+    <key>CFBundleURLName</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    </array>
+  </dict>
 </array>
 ```
 
-### Android Setup
+### Android
 
-✅ No additional configuration is required.
+No configuration required.
 
 ---
 
-## 🚀 Usage
-
-You can trigger patch checks from a widget, typically in your app root:
+## Usage
 
 ```dart
 class App extends StatefulWidget {
@@ -85,86 +54,64 @@ class App extends StatefulWidget {
   State<App> createState() => _AppState();
 }
 
-class _AppState extends State<App> with WidgetsBindingObserver {
+class _AppState extends State<App> {
+  final patchApp = PatchApp(
+    confirmDialog: (context) => patchAppConfirmationDialog(context),
+    onError: (error, stack) => debugPrint('Update failed: $error'),
+  );
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-
-    _checkAndUpdate();
+    patchApp.register(context); // Auto-checks on start & resume
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
+    patchApp.unregister(); // Stops lifecycle listener
     super.dispose();
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _checkAndUpdate();
-    }
-  }
-
-  Future<void> _checkAndUpdate() async {
-    final result = await PatchApp.instance.checkAndUpdate(
-      confirmDialog: () => patchAppConfirmationDialog(context),
-      minInterval: const Duration(minutes: 15),
-      onError: (error, stack) {
-        debugPrint("Update failed: $error");
-      },
-    );
-
-    debugPrint("Patch check result: $result");
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return const Scaffold();
+    return FilledButton(
+      onPressed: () => patchApp.checkAndUpdate(context), // Check and update manually
+      child: const Text('Check and Update'),
+    );
   }
 }
 ```
 
 ---
 
-## 🧩 Handling `BuildContext` Issues
+### `register()` and `unregister()`
 
-If you encounter `BuildContext`-related errors when showing your own dialog (it safe when using `patchAppConfirmationDialog`):
+* **`register(context)`**
+  Automatically checks for updates when the app starts or resumes.
+  Should be called once in `initState()`.
 
-```dart
-PatchApp.instance.checkAndUpdate(
-  confirmDialog: () async {
-    await WidgetsBinding.instance.endOfFrame; // ensure safe dialog call
-    if (!context.mounted) return false;
-
-    return customConfirmationDialog(context);
-  },
-  onError: (error, stack) {
-    debugPrint("Update failed: $error");
-  },
-);
-```
+* **`unregister()`**
+  Cleans up the lifecycle listener created by `register()`.
+  Always call this in `dispose()`.
 
 ---
 
-## 📊 Return Values
-
-`checkAndUpdate` returns a `PatchResult` enum so you can react programmatically:
+## Patch Results
 
 ```dart
 enum PatchResult {
-  noUpdate,        // No updater or no update found
-  upToDate,        // Already latest version
-  restartRequired, // Restart needed to apply patch (users disagree to update)
-  failed,          // Error occurred
+  noUpdate,        // No updater or no patch available
+  upToDate,        // Already on the latest version
+  restartRequired, // Patch applied; restart needed
+  failed,          // Error during the update
 }
 ```
 
 ---
 
-## ✅ Best Practices
+## Tips
 
-* Combine `minInterval` with `Timer.periodic` for regular background checks.
-* Trigger a check on **app resume** using `didChangeAppLifecycleState`.
-* Always provide an `onError` callback in production to catch unexpected failures. If `onError` is provided, the method will return `PatchResult.failed` on error. Otherwise, the error will be rethrown.
+* Always provide an `onError` callback in production to capture unexpected failures.
+
+  * If `onError` is provided, the method returns `PatchResult.failed` on error.
+  * If omitted, the error is rethrown.
