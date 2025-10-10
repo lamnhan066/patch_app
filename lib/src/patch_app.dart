@@ -10,9 +10,9 @@ import 'package:terminate_restart/terminate_restart.dart';
 ///
 /// Typical usage:
 /// ```dart
-/// await PatchApp.instance.checkAndUpdate(
-///   confirmDialog: () => patchAppConfirmationDialog(context: context),
-/// );
+/// await PatchApp(
+///   confirmDialog: (context) => patchAppConfirmationDialog(context: context),
+/// ).checkAndUpdate(context);
 /// ```
 ///
 /// It supports configurable update intervals, error handling,
@@ -44,7 +44,7 @@ class PatchApp {
 
   /// A callback for handling errors during the update process.
   ///
-  /// Receives the [error] and [stackTrace] when an exception occurs.
+  /// Receives the `error` and `stackTrace` when an exception occurs.
   final void Function(Object error, StackTrace stack)? onError;
 
   /// Enables or disables debug logging.
