@@ -31,8 +31,8 @@ class PatchApp {
     this.minInterval = const Duration(minutes: 15),
     this.onError,
     this.debug = false,
-  })  : _updater = ShorebirdUpdater(),
-        _terminateRestart = TerminateRestart.instance;
+  }) : _updater = ShorebirdUpdater(),
+       _terminateRestart = TerminateRestart.instance;
 
   /// A callback to display a confirmation dialog before restarting the app.
   ///

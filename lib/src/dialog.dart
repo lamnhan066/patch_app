@@ -7,8 +7,9 @@ import 'package:flutter/material.dart';
 Future<bool> patchAppConfirmationDialog({
   required BuildContext context,
   String title = 'Restart to Update',
-  String content = 'A new update is available.\n\n'
-      'Would you like to restart the app to apply the update?',
+  String content =
+      'A new update is available.\n\n'
+          'Would you like to restart the app to apply the update?',
   String cancelLabel = 'CANCEL',
   String restartLabel = 'RESTART',
 
@@ -23,44 +24,45 @@ Future<bool> patchAppConfirmationDialog({
   final confirmed = await showDialog<bool>(
     context: context,
     barrierDismissible: !isForce,
-    builder: (context) => PopScope(
-      canPop: !isForce,
-      child: AlertDialog(
-        icon: Icon(
-          Icons.warning_amber_rounded,
-          size: 32,
-          color: ColorScheme.of(context).tertiary,
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        content: Text(content),
-        actions: [
-          if (!isForce)
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(
-                cancelLabel,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 1,
+    builder:
+        (context) => PopScope(
+          canPop: !isForce,
+          child: AlertDialog(
+            icon: Icon(
+              Icons.warning_amber_rounded,
+              size: 32,
+              color: ColorScheme.of(context).tertiary,
+            ),
+            title: Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            content: Text(content),
+            actions: [
+              if (!isForce)
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: Text(
+                    cancelLabel,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(
+                  restartLabel,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 1,
+                  ),
                 ),
               ),
-            ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              restartLabel,
-              style: const TextStyle(
-                fontWeight: FontWeight.w500,
-                letterSpacing: 1,
-              ),
-            ),
+            ],
           ),
-        ],
-      ),
-    ),
+        ),
   );
 
   return confirmed ?? false;
