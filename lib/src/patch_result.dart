@@ -1,13 +1,24 @@
+/// @docImport '../patch_app.dart';
+library;
+
+/// Represents the outcome of a patch update attempt.
+///
+/// Returned by [PatchApp.checkAndUpdate] to indicate whether a patch was found,
+/// applied, or if an error occurred during the process.
+///
+/// You can use this result to determine the next action in your app logic, such as
+/// notifying the user, triggering a restart, or logging an error.
 enum PatchResult {
-  /// Updater not available or no update found
+  /// Indicates that no updater is available or no patch update was found.
   noUpdate,
 
-  /// Already on latest version
+  /// Indicates that the app is already running the latest version.
   upToDate,
 
-  /// Update already staged and restart is needed
+  /// Indicates that a patch has been successfully downloaded and staged,
+  /// and a restart is required to apply it.
   restartRequired,
 
-  /// Any error during the process
+  /// Indicates that an error occurred during the patching or update process.
   failed,
 }
