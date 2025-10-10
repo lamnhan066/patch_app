@@ -1,11 +1,11 @@
 name: patch_app
 description: "A lightweight helper to patch your Flutter app at runtime using shorebird\_code\_push and terminate\_restart"
-version: 0.0.4
+version: 0.1.0
 homepage: https://github.com/lamnhan066/patch_app
 
 environment:
-  sdk: ">=3.5.4 <4.0.0"
-  flutter: ">=3.24.5"
+  sdk: ^3.7.0
+  flutter: ">=3.29.0"
 
 dependencies:
   flutter:

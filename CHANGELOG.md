@@ -1,3 +1,34 @@
+## 0.1.0
+
+* **BREAKING CHANGE:**
+  * feat: convert PatchApp to instance-based lifecycle-aware updater.
+  * Use dart `^3.7.0` and flutter `>=3.29.0`.
+* Update docs and README.
+
+* **MIGRATION GUIDE**:
+
+  Old version:
+
+  ```dart
+  await PatchApp.instance.checkAndUpdate(
+      confirmDialog: () => patchAppConfirmationDialog(context),
+      minInterval: const Duration(minutes: 15),
+      onError: (error, stack) {
+        debugPrint("Update failed: $error");
+      },
+  );
+  ```
+
+  New version:
+  
+  ```dart
+  PatchApp(
+    confirmDialog: (context) => patchAppConfirmationDialog(context),
+    minInterval: const Duration(minutes: 15),
+    onError: (error, stack) => debugPrint('Update failed: $error'),
+  ).checkAndUpdate(context);
+  ```
+
 ## 0.0.4
 
 * Rename from `update` to `checkAndUpdate`.
