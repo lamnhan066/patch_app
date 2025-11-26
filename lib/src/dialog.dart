@@ -13,6 +13,9 @@ Future<bool> patchAppConfirmationDialog({
   String cancelLabel = 'CANCEL',
   String restartLabel = 'RESTART',
 
+  /// If true, the dialog will be shown in the root navigator.
+  bool useRootNavigator = true,
+
   /// If true, the dialog cannot be dismissed without user action.
   bool isForce = false,
 }) async {
@@ -24,6 +27,7 @@ Future<bool> patchAppConfirmationDialog({
   final confirmed = await showDialog<bool>(
     context: context,
     barrierDismissible: !isForce,
+    useRootNavigator: useRootNavigator,
     builder:
         (context) => PopScope(
           canPop: !isForce,
