@@ -1,3 +1,7 @@
+## 0.1.2
+
+* feat: add useRootNavigator option to patchAppConfirmationDialog.
+
 ## 0.1.1
 
 * feat: add Flutter example app integrating patch_app.
