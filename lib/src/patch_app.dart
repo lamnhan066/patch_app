@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:patch_app/src/patch_result.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
@@ -31,8 +33,12 @@ class PatchApp {
     this.minInterval = const Duration(minutes: 15),
     this.onError,
     this.debug = false,
-  }) : _updater = ShorebirdUpdater(),
-       _terminateRestart = TerminateRestart.instance;
+    ShorebirdUpdater? updater,
+    TerminateRestart? terminateRestart,
+    DateTime Function()? now,
+  }) : _updater = updater ?? ShorebirdUpdater(),
+       _terminateRestart = terminateRestart ?? TerminateRestart.instance,
+       _now = now ?? DateTime.now;
 
   /// A callback to display a confirmation dialog before restarting the app.
   ///
@@ -57,6 +63,9 @@ class PatchApp {
 
   /// Handles application restart functionality.
   final TerminateRestart _terminateRestart;
+
+  /// Clock used for determining throttling intervals.
+  final DateTime Function() _now;
 
   /// Lifecycle listener used to recheck updates when the app resumes.
   AppLifecycleListener? _listener;
@@ -94,9 +103,9 @@ class PatchApp {
   /// }
   /// ```
   void register(BuildContext context) {
-    checkAndUpdate(context).ignore();
+    unawaited(checkAndUpdate(context));
     _listener = AppLifecycleListener(
-      onResume: () => checkAndUpdate(context),
+      onResume: () => unawaited(checkAndUpdate(context)),
     );
   }
 
@@ -138,6 +147,7 @@ class PatchApp {
   /// - [PatchResult.noUpdate] if no update was found or skipped.
   /// - [PatchResult.upToDate] if already on the latest version.
   /// - [PatchResult.restartRequired] if an update was applied and a restart is needed.
+  /// - [PatchResult.cancelled] if the restart prompt was dismissed or skipped.
   /// - [PatchResult.failed] if an error occurred and was caught by [onError].
   ///
   /// Throws the exception if [onError] is not provided.
@@ -152,12 +162,11 @@ class PatchApp {
       _isInitialized = true;
     }
 
-    final now = DateTime.now();
+    final now = _now();
     if (_lastCheck != null && now.difference(_lastCheck!) < minInterval) {
       _log('[PatchApp] Skipping update check (too soon).');
       return PatchResult.noUpdate;
     }
-    _lastCheck = now;
 
     if (_isUpdating) {
       _log('[PatchApp] Update already in progress, skipping.');
@@ -165,10 +174,12 @@ class PatchApp {
     }
 
     _isUpdating = true;
+    _lastCheck = now;
     try {
       _log('[PatchApp] Checking for updates...');
       final status = await _updater.checkForUpdate();
 
+      var requiresRestart = false;
       switch (status) {
         case UpdateStatus.unavailable:
           _log('[PatchApp] No updates available.');
@@ -180,11 +191,13 @@ class PatchApp {
           _log('[PatchApp] Update available, downloading...');
           await _updater.update();
           _log('[PatchApp] Update applied. Restart required.');
+          requiresRestart = true;
         case UpdateStatus.restartRequired:
           _log('[PatchApp] Restart required.');
+          requiresRestart = true;
       }
 
-      if (context.mounted) {
+      if (requiresRestart && context.mounted) {
         _log('[PatchApp] Showing confirmation dialog...');
         final result = await confirmDialog(context);
         _log('[PatchApp] Confirmation dialog result: $result');
@@ -193,14 +206,18 @@ class PatchApp {
           await _terminateRestart.restartApp(
             options: const TerminateRestartOptions(),
           );
+          return PatchResult.restartRequired;
         }
-      } else {
+        _log('[PatchApp] Restart cancelled by user.');
+        return PatchResult.cancelled;
+      } else if (requiresRestart) {
         _log(
           '[PatchApp] Context not mounted, skipping showing confirmation dialog.',
         );
+        return PatchResult.cancelled;
       }
 
-      return PatchResult.restartRequired;
+      return PatchResult.noUpdate;
     } catch (e, stack) {
       _log('[PatchApp] Error during update process: $e');
       if (onError != null) {

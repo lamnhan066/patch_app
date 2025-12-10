@@ -15,6 +15,9 @@ enum PatchResult {
   /// Indicates that the app is already running the latest version.
   upToDate,
 
+  /// Indicates that an update is staged but restart was skipped or cancelled.
+  cancelled,
+
   /// Indicates that a patch has been successfully downloaded and staged,
   /// and a restart is required to apply it.
   restartRequired,
