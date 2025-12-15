@@ -71,19 +71,8 @@ class _HomeState extends State<_Home> {
               onPressed: isChecking ? null : () => _runCheck(context),
               child: Text(isChecking ? 'Checking…' : 'Manual check & update'),
             ),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: isChecking
-                  ? null
-                  : () async {
-                      // Case 2: manual check without waiting for result UI
-                      // Fire-and-forget when you just want to trigger a check.
-                      unawaited(patchApp.checkAndUpdate(context));
-                    },
-              child: const Text('Manual check (fire-and-forget)'),
-            ),
-            const Spacer(),
-            Text('Last result: ${lastResult?.name ?? 'none'}'),
+            const SizedBox(height: 16),
+            Center(child: Text('Last result: ${lastResult?.name ?? 'none'}')),
           ],
         ),
       ),
