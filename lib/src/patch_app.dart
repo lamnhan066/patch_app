@@ -197,24 +197,27 @@ class PatchApp {
           requiresRestart = true;
       }
 
-      if (requiresRestart && context.mounted) {
-        _log('[PatchApp] Showing confirmation dialog...');
-        final result = await confirmDialog(context);
-        _log('[PatchApp] Confirmation dialog result: $result');
-        if (result) {
-          _log('[PatchApp] Restarting app...');
-          await _terminateRestart.restartApp(
-            options: const TerminateRestartOptions(),
-          );
-          return PatchResult.restartRequired;
+      if (requiresRestart) {
+        if (context.mounted) {
+          _log('[PatchApp] Showing confirmation dialog...');
+          final result = await confirmDialog(context);
+          _log('[PatchApp] Confirmation dialog result: $result');
+          if (result) {
+            _log('[PatchApp] Restarting app...');
+            await _terminateRestart.restartApp(
+              options: const TerminateRestartOptions(),
+            );
+            _log('[PatchApp] The app cannot be restarted, restart required.');
+            return PatchResult.restartRequired;
+          }
+          _log('[PatchApp] Restart cancelled by user.');
+          return PatchResult.cancelled;
         }
-        _log('[PatchApp] Restart cancelled by user.');
-        return PatchResult.cancelled;
-      } else if (requiresRestart) {
+
         _log(
           '[PatchApp] Context not mounted, skipping showing confirmation dialog.',
         );
-        return PatchResult.cancelled;
+        return PatchResult.restartRequired;
       }
 
       return PatchResult.noUpdate;

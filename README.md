@@ -13,6 +13,7 @@ It automatically checks for Shorebird updates, applies patches, and restarts you
 * Restart the app safely with one line of code
 * Built-in `minInterval` to limit check frequency and prevent redundant checks
 * Optional error handling via callback or `PatchResult`
+* Only report `PatchResult.restartRequired` when the restart dialog is accepted (or cannot be shown), while rejected prompts return `PatchResult.cancelled`
 
 ---
 
@@ -102,11 +103,13 @@ class _AppState extends State<App> {
 enum PatchResult {
   noUpdate,        // No updater or no patch available
   upToDate,        // Already on the latest version
-  cancelled,       // Restart dialog dismissed or skipped
+  cancelled,       // Restart prompt dismissed or skipped
   restartRequired, // Patch applied; restart needed
   failed,          // Error during the update
 }
 ```
+
+`cancelled` is returned when the confirmation dialog is dismissed, while `restartRequired` is only emitted after the user accepts a restart (or if the dialog cannot be shown because the context was unmounted), signaling that a restart is still needed.
 
 ---
 
