@@ -1,3 +1,11 @@
+# Changelog
+
+## 0.1.3
+
+* feat: return `PatchResult.cancelled` when the restart prompt is dismissed so callers can distinguish user-aborted restarts from genuine updates.
+* fix: only start throttling after an update run begins and report `PatchResult.restartRequired` once the restart is accepted (or when the dialog cannot be shown) so cancelled restarts no longer surface as required.
+* docs: clarify the confirmation/result contract in the README.
+
 ## 0.1.2
 
 * feat: add useRootNavigator option to patchAppConfirmationDialog.
