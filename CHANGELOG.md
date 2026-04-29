@@ -5,6 +5,9 @@
 * **BREAKING CHANGE:**
   * feat: change `register` to use named arguments and support deferred startup checks via `navigatorKey`.
   * Call `patchApp.register(context: context)` for the common case, or `patchApp.register(navigatorKey: navigatorKey)` when the navigator context is not ready yet.
+* feat: add optional `timeout` to `PatchApp.register(...)` to stop deferred registration retries after a maximum wait duration.
+* feat: add `timeout` to `PatchAppScope` and forward it to registration for both `context` and `navigatorKey` flows.
+* feat: bump `terminate_restart` to `v1.1.0` and `shorebird_code_push` to `v2.0.6`.
 * docs: update the README usage examples to match the new registration flow.
 
 ## 0.1.3
