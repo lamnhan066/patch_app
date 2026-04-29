@@ -391,4 +391,48 @@ void main() {
 
     expect(updater.checkForUpdateCalls, 0);
   });
+
+  testWidgets('wrong navigator key keeps retrying until a valid key is used', (
+    tester,
+  ) async {
+    final clock = _FakeClock(DateTime(2024, 1, 1, 12));
+    final updater = _FakeShorebirdUpdater(
+      onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
+    );
+    final restart = _FakeTerminateRestart();
+    final wrongNavigatorKey = GlobalKey<NavigatorState>();
+    final attachedNavigatorKey = GlobalKey<NavigatorState>();
+
+    final patchApp = PatchApp(
+      confirmDialog: (_) async => true,
+      updater: updater,
+      terminateRestart: restart,
+      now: clock.now,
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorKey: attachedNavigatorKey,
+        home: const SizedBox.shrink(),
+      ),
+    );
+    await tester.pump();
+
+    patchApp.register(navigatorKey: wrongNavigatorKey);
+
+    // The key is not attached to the active tree, so registration keeps retrying
+    // and must not call checkForUpdate yet.
+    await tester.pump(const Duration(milliseconds: 16));
+    await tester.pump(const Duration(milliseconds: 16));
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(updater.checkForUpdateCalls, 0);
+
+    patchApp.unregister();
+    patchApp.register(navigatorKey: attachedNavigatorKey);
+    await tester.pump();
+
+    expect(updater.checkForUpdateCalls, 1);
+
+    patchApp.unregister();
+  });
 }
