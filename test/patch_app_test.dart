@@ -427,8 +427,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 16));
     expect(updater.checkForUpdateCalls, 0);
 
-    patchApp.unregister();
-    patchApp.register(navigatorKey: attachedNavigatorKey);
+    patchApp
+      ..unregister()
+      ..register(navigatorKey: attachedNavigatorKey);
     await tester.pump();
 
     expect(updater.checkForUpdateCalls, 1);
@@ -450,9 +451,7 @@ void main() {
       updater: updater,
       terminateRestart: restart,
       now: clock.now,
-    );
-
-    patchApp.register(
+    )..register(
       navigatorKey: wrongNavigatorKey,
       timeout: const Duration(seconds: 1),
     );
