@@ -79,6 +79,12 @@ class PatchApp {
   /// Binding used to retry registration until a context becomes available.
   WidgetsBinding? _binding;
 
+  /// Maximum duration to keep retrying deferred registration.
+  Duration? _registrationTimeout;
+
+  /// Deadline after which deferred registration retries stop.
+  DateTime? _registrationDeadline;
+
   /// Prevents scheduling duplicate post-frame retries.
   bool _registrationRetryScheduled = false;
 
@@ -119,11 +125,13 @@ class PatchApp {
   /// ```
   /// A navigator key can be supplied when the [BuildContext] is not yet
   /// available. In that case, registration waits until the navigator's
-  /// context is mounted.
+  /// context is mounted. Use [timeout] to stop retrying after a maximum
+  /// waiting duration.
   void register({
     BuildContext? context,
     GlobalKey<NavigatorState>? navigatorKey,
     WidgetsBinding? binding,
+    Duration? timeout,
   }) {
     if (_listener != null) return;
 
@@ -136,6 +144,8 @@ class PatchApp {
     _registeredContext = context;
     _navigatorKey = navigatorKey;
     _binding = binding ?? WidgetsBinding.instance;
+    _registrationTimeout = timeout;
+    _registrationDeadline = timeout == null ? null : _now().add(timeout);
     _isActive = true;
     _listener = AppLifecycleListener(onResume: _checkWhenReady);
 
@@ -171,6 +181,8 @@ class PatchApp {
     _registeredContext = null;
     _navigatorKey = null;
     _binding = null;
+    _registrationTimeout = null;
+    _registrationDeadline = null;
     _registrationRetryScheduled = false;
     _isInitialized = false;
   }
@@ -185,12 +197,27 @@ class PatchApp {
       return;
     }
 
+    if (_hasTimedOut()) {
+      _registrationRetryScheduled = false;
+      return;
+    }
+
     if (_registrationRetryScheduled) return;
     _registrationRetryScheduled = true;
     _binding?.addPostFrameCallback((_) {
       _registrationRetryScheduled = false;
       _checkWhenReady();
     });
+  }
+
+  bool _hasTimedOut() {
+    final timeout = _registrationTimeout;
+    if (timeout == null) return false;
+
+    final deadline = _registrationDeadline;
+    if (deadline == null) return false;
+
+    return !_now().isBefore(deadline);
   }
 
   BuildContext? _resolveContext() {

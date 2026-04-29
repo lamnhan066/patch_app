@@ -11,6 +11,7 @@ class PatchAppScope extends StatefulWidget {
     super.key,
     this.navigatorKey,
     this.binding,
+    this.timeout,
   });
 
   /// The patch manager to register and unregister.
@@ -24,6 +25,9 @@ class PatchAppScope extends StatefulWidget {
 
   /// Optional binding used to schedule deferred registration retries.
   final WidgetsBinding? binding;
+
+  /// Optional timeout to stop deferred registration retries.
+  final Duration? timeout;
 
   @override
   State<PatchAppScope> createState() => _PatchAppScopeState();
@@ -59,11 +63,16 @@ class _PatchAppScopeState extends State<PatchAppScope> {
       widget.patchApp.register(
         navigatorKey: navigatorKey,
         binding: widget.binding,
+        timeout: widget.timeout,
       );
       return;
     }
 
-    widget.patchApp.register(context: context, binding: widget.binding);
+    widget.patchApp.register(
+      context: context,
+      binding: widget.binding,
+      timeout: widget.timeout,
+    );
   }
 
   @override

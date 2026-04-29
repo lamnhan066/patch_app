@@ -435,4 +435,79 @@ void main() {
 
     patchApp.unregister();
   });
+
+  testWidgets('register stops retrying after timeout', (tester) async {
+    final clock = _FakeClock(DateTime(2024, 1, 1, 12));
+    final updater = _FakeShorebirdUpdater(
+      onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
+    );
+    final restart = _FakeTerminateRestart();
+    final wrongNavigatorKey = GlobalKey<NavigatorState>();
+    final attachedNavigatorKey = GlobalKey<NavigatorState>();
+
+    final patchApp = PatchApp(
+      confirmDialog: (_) async => true,
+      updater: updater,
+      terminateRestart: restart,
+      now: clock.now,
+    );
+
+    patchApp.register(
+      navigatorKey: wrongNavigatorKey,
+      timeout: const Duration(seconds: 1),
+    );
+
+    clock.advance(const Duration(seconds: 2));
+    await tester.pump();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorKey: attachedNavigatorKey,
+        home: const SizedBox.shrink(),
+      ),
+    );
+    await tester.pump();
+
+    expect(updater.checkForUpdateCalls, 0);
+
+    patchApp.unregister();
+  });
+
+  testWidgets('PatchAppScope timeout stops deferred navigator retries', (
+    tester,
+  ) async {
+    final clock = _FakeClock(DateTime(2024, 1, 1, 12));
+    final updater = _FakeShorebirdUpdater(
+      onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
+    );
+    final restart = _FakeTerminateRestart();
+    final wrongNavigatorKey = GlobalKey<NavigatorState>();
+    final attachedNavigatorKey = GlobalKey<NavigatorState>();
+
+    final patchApp = PatchApp(
+      confirmDialog: (_) async => true,
+      updater: updater,
+      terminateRestart: restart,
+      now: clock.now,
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorKey: attachedNavigatorKey,
+        home: PatchAppScope(
+          patchApp: patchApp,
+          navigatorKey: wrongNavigatorKey,
+          timeout: const Duration(seconds: 1),
+          child: const SizedBox.shrink(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    clock.advance(const Duration(seconds: 2));
+    await tester.pump();
+    await tester.pump();
+
+    expect(updater.checkForUpdateCalls, 0);
+  });
 }
