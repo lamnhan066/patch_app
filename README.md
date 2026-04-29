@@ -11,6 +11,7 @@ It automatically checks for Shorebird updates, applies patches, and restarts you
 * Check and apply Shorebird patches dynamically
 * Show a customizable restart confirmation dialog
 * Restart the app safely with one line of code
+* Register with `context:` or `navigatorKey:` so startup checks can wait for the navigator to be ready
 * Built-in `minInterval` to limit check frequency and prevent redundant checks
 * Optional error handling via callback or `PatchResult`
 * Only report `PatchResult.restartRequired` when the restart dialog is accepted (or cannot be shown), while rejected prompts return `PatchResult.cancelled`
@@ -64,7 +65,7 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
-    patchApp.register(context); // Auto-checks on start & resume
+    patchApp.register(context: context); // Auto-checks on start & resume
   }
 
   @override
@@ -85,11 +86,15 @@ class _AppState extends State<App> {
 
 ---
 
-### `register()` and `unregister()`
+### `register(context:)` and `unregister()`
 
 * **`register(context)`**
   Automatically checks for updates when the app starts or resumes.
   Should be called once in `initState()`.
+  If you need to wait for the navigator to become available, pass a
+  `navigatorKey` instead:
+  `patchApp.register(navigatorKey: navigatorKey)`.
+  The `context:` and `navigatorKey:` arguments are named.
 
 * **`unregister()`**
   Cleans up the lifecycle listener created by `register()`.

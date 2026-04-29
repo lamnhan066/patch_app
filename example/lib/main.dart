@@ -32,7 +32,7 @@ class _HomeState extends State<_Home> {
   void initState() {
     super.initState();
     // Case 1: auto-check on start & resume.
-    patchApp.register(context);
+    patchApp.register(context: context);
   }
 
   @override

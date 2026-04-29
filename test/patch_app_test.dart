@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:patch_app/patch_app.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
@@ -103,6 +103,18 @@ Future<BuildContext> _pumpContext(WidgetTester tester) async {
     ),
   );
   return capturedContext;
+}
+
+Future<void> _pumpNavigatorApp(
+  WidgetTester tester,
+  GlobalKey<NavigatorState> navigatorKey,
+) async {
+  await tester.pumpWidget(
+    MaterialApp(
+      navigatorKey: navigatorKey,
+      home: const SizedBox.shrink(),
+    ),
+  );
 }
 
 void main() {
@@ -231,5 +243,57 @@ void main() {
 
     expect(result, PatchResult.noUpdate);
     expect(restart.initialized, isFalse);
+  });
+
+  testWidgets('register waits for the navigator context when needed', (
+    tester,
+  ) async {
+    final clock = _FakeClock(DateTime(2024, 1, 1, 12));
+    final updater = _FakeShorebirdUpdater(
+      onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
+    );
+    final restart = _FakeTerminateRestart();
+    final navigatorKey = GlobalKey<NavigatorState>();
+
+    final patchApp = PatchApp(
+      confirmDialog: (_) async => true,
+      updater: updater,
+      terminateRestart: restart,
+      now: clock.now,
+    )..register(navigatorKey: navigatorKey);
+
+    expect(updater.checkForUpdateCalls, 0);
+
+    await _pumpNavigatorApp(tester, navigatorKey);
+    await tester.pump();
+
+    expect(updater.checkForUpdateCalls, 1);
+
+    patchApp.unregister();
+  });
+
+  testWidgets('unregister cancels deferred navigator registration', (
+    tester,
+  ) async {
+    final clock = _FakeClock(DateTime(2024, 1, 1, 12));
+    final updater = _FakeShorebirdUpdater(
+      onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
+    );
+    final restart = _FakeTerminateRestart();
+    final navigatorKey = GlobalKey<NavigatorState>();
+
+    PatchApp(
+        confirmDialog: (_) async => true,
+        updater: updater,
+        terminateRestart: restart,
+        now: clock.now,
+      )
+      ..register(navigatorKey: navigatorKey)
+      ..unregister();
+
+    await _pumpNavigatorApp(tester, navigatorKey);
+    await tester.pump();
+
+    expect(updater.checkForUpdateCalls, 0);
   });
 }

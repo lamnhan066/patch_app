@@ -70,6 +70,21 @@ class PatchApp {
   /// Lifecycle listener used to recheck updates when the app resumes.
   AppLifecycleListener? _listener;
 
+  /// Context supplied to [register], if any.
+  BuildContext? _registeredContext;
+
+  /// Navigator key supplied to [register], if any.
+  GlobalKey<NavigatorState>? _navigatorKey;
+
+  /// Binding used to retry registration until a context becomes available.
+  WidgetsBinding? _binding;
+
+  /// Prevents scheduling duplicate post-frame retries.
+  bool _registrationRetryScheduled = false;
+
+  /// Tracks whether the registration flow is active.
+  bool _isActive = true;
+
   /// Tracks whether initialization (e.g., [TerminateRestart]) has been performed.
   bool _isInitialized = false;
 
@@ -102,11 +117,29 @@ class PatchApp {
   ///   super.dispose();
   /// }
   /// ```
-  void register(BuildContext context) {
-    unawaited(checkAndUpdate(context));
-    _listener = AppLifecycleListener(
-      onResume: () => unawaited(checkAndUpdate(context)),
-    );
+  /// A navigator key can be supplied when the [BuildContext] is not yet
+  /// available. In that case, registration waits until the navigator's
+  /// context is mounted.
+  void register({
+    BuildContext? context,
+    GlobalKey<NavigatorState>? navigatorKey,
+    WidgetsBinding? binding,
+  }) {
+    if (_listener != null) return;
+
+    if (context == null && navigatorKey == null) {
+      throw ArgumentError(
+        'Either context or navigatorKey must be provided to register().',
+      );
+    }
+
+    _registeredContext = context;
+    _navigatorKey = navigatorKey;
+    _binding = binding ?? WidgetsBinding.instance;
+    _isActive = true;
+    _listener = AppLifecycleListener(onResume: _checkWhenReady);
+
+    _checkWhenReady();
   }
 
   /// Unregisters the lifecycle listener created by [register].
@@ -132,9 +165,46 @@ class PatchApp {
   /// }
   /// ```
   void unregister() {
+    _isActive = false;
     _listener?.dispose();
     _listener = null;
+    _registeredContext = null;
+    _navigatorKey = null;
+    _binding = null;
+    _registrationRetryScheduled = false;
     _isInitialized = false;
+  }
+
+  void _checkWhenReady() {
+    if (!_isActive) return;
+
+    final context = _resolveContext();
+    if (context != null) {
+      _registrationRetryScheduled = false;
+      unawaited(checkAndUpdate(context));
+      return;
+    }
+
+    if (_registrationRetryScheduled) return;
+    _registrationRetryScheduled = true;
+    _binding?.addPostFrameCallback((_) {
+      _registrationRetryScheduled = false;
+      _checkWhenReady();
+    });
+  }
+
+  BuildContext? _resolveContext() {
+    final context = _registeredContext;
+    if (context != null && context.mounted) {
+      return context;
+    }
+
+    final navigatorContext = _navigatorKey?.currentState?.context;
+    if (navigatorContext != null && navigatorContext.mounted) {
+      return navigatorContext;
+    }
+
+    return null;
   }
 
   /// Checks for Shorebird updates and applies them if available.

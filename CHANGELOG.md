@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0
+
+* **BREAKING CHANGE:**
+  * feat: change `register` to use named arguments and support deferred startup checks via `navigatorKey`.
+  * Call `patchApp.register(context: context)` for the common case, or `patchApp.register(navigatorKey: navigatorKey)` when the navigator context is not ready yet.
+* docs: update the README usage examples to match the new registration flow.
+
 ## 0.1.3
 
 * feat: return `PatchResult.cancelled` when the restart prompt is dismissed so callers can distinguish user-aborted restarts from genuine updates.
