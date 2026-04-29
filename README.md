@@ -11,7 +11,7 @@ It automatically checks for Shorebird updates, applies patches, and restarts you
 * Check and apply Shorebird patches dynamically
 * Show a customizable restart confirmation dialog
 * Restart the app safely with one line of code
-* Register with `context:` or `navigatorKey:` so startup checks can wait for the navigator to be ready
+* Register with `context:`, `navigatorKey:`, or `binding:` so startup checks can wait for the navigator to be ready
 * Built-in `minInterval` to limit check frequency and prevent redundant checks
 * Optional error handling via callback or `PatchResult`
 * Only report `PatchResult.restartRequired` when the restart dialog is accepted (or cannot be shown), while rejected prompts return `PatchResult.cancelled`
@@ -63,28 +63,26 @@ class _AppState extends State<App> {
   );
 
   @override
-  void initState() {
-    super.initState();
-    patchApp.register(context: context); // Auto-checks on start & resume
-  }
-
-  @override
-  void dispose() {
-    patchApp.unregister(); // Stops lifecycle listener
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return FilledButton(
-      onPressed: () => patchApp.checkAndUpdate(context), // Check and update manually
-      child: const Text('Check and Update'),
+    return PatchAppScope(
+      patchApp: patchApp,
+      child: FilledButton(
+        onPressed: () => patchApp.checkAndUpdate(context), // Check and update manually
+        child: const Text('Check and Update'),
+      ),
     );
   }
 }
 ```
 
 ---
+
+### `PatchAppScope`
+
+* Wrap any subtree in `PatchAppScope` to register automatically for the wrapped widget.
+  It calls `register()` in `initState()` and `unregister()` in `dispose()` for you.
+* If you are wrapping an app root that needs to wait for a navigator, pass a `navigatorKey` to the scope.
+* If you need to control deferred registration scheduling in tests or custom bindings, pass a `binding` to the scope.
 
 ### `register(context:)` and `unregister()`
 

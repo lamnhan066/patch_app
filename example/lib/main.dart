@@ -28,19 +28,6 @@ class _HomeState extends State<_Home> {
   PatchResult? lastResult;
   bool isChecking = false;
 
-  @override
-  void initState() {
-    super.initState();
-    // Case 1: auto-check on start & resume.
-    patchApp.register(context: context);
-  }
-
-  @override
-  void dispose() {
-    patchApp.unregister();
-    super.dispose();
-  }
-
   Future<void> _runCheck(BuildContext context) async {
     setState(() => isChecking = true);
     final result = await patchApp.checkAndUpdate(context);
@@ -56,24 +43,27 @@ class _HomeState extends State<_Home> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('patch_app example')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Auto-check on start/resume + manual checks with PatchResult feedback.',
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: isChecking ? null : () => _runCheck(context),
-              child: Text(isChecking ? 'Checking…' : 'Manual check & update'),
-            ),
-            const SizedBox(height: 16),
-            Center(child: Text('Last result: ${lastResult?.name ?? 'none'}')),
-          ],
+    return PatchAppScope(
+      patchApp: patchApp,
+      child: Scaffold(
+        appBar: AppBar(title: const Text('patch_app example')),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Auto-check on start/resume + manual checks with PatchResult feedback.',
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: isChecking ? null : () => _runCheck(context),
+                child: Text(isChecking ? 'Checking…' : 'Manual check & update'),
+              ),
+              const SizedBox(height: 16),
+              Center(child: Text('Last result: ${lastResult?.name ?? 'none'}')),
+            ],
+          ),
         ),
       ),
     );

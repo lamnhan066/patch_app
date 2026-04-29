@@ -272,6 +272,101 @@ void main() {
     patchApp.unregister();
   });
 
+  testWidgets('PatchAppScope registers automatically', (tester) async {
+    final clock = _FakeClock(DateTime(2024, 1, 1, 12));
+    final updater = _FakeShorebirdUpdater(
+      onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
+    );
+    final restart = _FakeTerminateRestart();
+
+    final patchApp = PatchApp(
+      confirmDialog: (_) async => true,
+      updater: updater,
+      terminateRestart: restart,
+      now: clock.now,
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: PatchAppScope(
+          patchApp: patchApp,
+          child: const SizedBox.shrink(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(updater.checkForUpdateCalls, 1);
+  });
+
+  testWidgets('PatchAppScope forwards navigatorKey registration', (
+    tester,
+  ) async {
+    final clock = _FakeClock(DateTime(2024, 1, 1, 12));
+    final updater = _FakeShorebirdUpdater(
+      onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
+    );
+    final restart = _FakeTerminateRestart();
+    final navigatorKey = GlobalKey<NavigatorState>();
+
+    final patchApp = PatchApp(
+      confirmDialog: (_) async => true,
+      updater: updater,
+      terminateRestart: restart,
+      now: clock.now,
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorKey: navigatorKey,
+        home: PatchAppScope(
+          patchApp: patchApp,
+          navigatorKey: navigatorKey,
+          child: const SizedBox.shrink(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(updater.checkForUpdateCalls, 1);
+  });
+
+  testWidgets('PatchAppScope unregisters when removed from tree', (
+    tester,
+  ) async {
+    final clock = _FakeClock(DateTime(2024, 1, 1, 12));
+    final updater = _FakeShorebirdUpdater(
+      onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
+    );
+    final restart = _FakeTerminateRestart();
+    final navigatorKey = GlobalKey<NavigatorState>();
+
+    final patchApp = PatchApp(
+      confirmDialog: (_) async => true,
+      updater: updater,
+      terminateRestart: restart,
+      now: clock.now,
+    );
+
+    await tester.pumpWidget(
+      PatchAppScope(
+        patchApp: patchApp,
+        navigatorKey: navigatorKey,
+        child: const SizedBox.shrink(),
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorKey: navigatorKey,
+        home: const SizedBox.shrink(),
+      ),
+    );
+    await tester.pump();
+
+    expect(updater.checkForUpdateCalls, 0);
+  });
+
   testWidgets('unregister cancels deferred navigator registration', (
     tester,
   ) async {
