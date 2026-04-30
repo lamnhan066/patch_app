@@ -131,6 +131,7 @@ PatchAppScope(
 ```dart
 enum PatchResult {
   noUpdate,        // No updater or no patch available
+  throttled,       // Check skipped because `minInterval` not reached
   upToDate,        // Already on the latest version
   cancelled,       // Restart prompt dismissed or skipped
   restartRequired, // Patch applied; restart needed
@@ -138,7 +139,12 @@ enum PatchResult {
 }
 ```
 
-`cancelled` is returned when the confirmation dialog is dismissed, while `restartRequired` is only emitted after the user accepts a restart (or if the dialog cannot be shown because the context was unmounted), signaling that a restart is still needed.
+`throttled` is returned when a call to `checkAndUpdate` is skipped because the
+configured `minInterval` between checks has not yet elapsed. `cancelled` is
+returned when the confirmation dialog is dismissed, while `restartRequired` is
+only emitted after the user accepts a restart (or if the dialog cannot be
+shown because the context was unmounted), signaling that a restart is still
+needed.
 
 ---
 

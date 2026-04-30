@@ -242,7 +242,9 @@ class PatchApp {
   /// - Prompts the user via [confirmDialog] before restarting.
   ///
   /// Returns a [PatchResult] indicating the result:
-  /// - [PatchResult.noUpdate] if no update was found or skipped.
+  /// - [PatchResult.noUpdate] if no update was found.
+  /// - [PatchResult.throttled] if the check was skipped because the minimum
+  ///   interval between checks has not been reached.
   /// - [PatchResult.upToDate] if already on the latest version.
   /// - [PatchResult.restartRequired] if an update was applied and a restart is needed.
   /// - [PatchResult.cancelled] if the restart prompt was dismissed or skipped.
@@ -260,15 +262,15 @@ class PatchApp {
       _isInitialized = true;
     }
 
-    final now = _now();
-    if (_lastCheck != null && now.difference(_lastCheck!) < minInterval) {
-      _log('[PatchApp] Skipping update check (too soon).');
-      return PatchResult.noUpdate;
-    }
-
     if (_isUpdating) {
       _log('[PatchApp] Update already in progress, skipping.');
       return PatchResult.noUpdate;
+    }
+
+    final now = _now();
+    if (_lastCheck != null && now.difference(_lastCheck!) < minInterval) {
+      _log('[PatchApp] Skipping update check (too soon).');
+      return PatchResult.throttled;
     }
 
     _isUpdating = true;

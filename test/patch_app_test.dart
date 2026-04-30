@@ -142,7 +142,7 @@ void main() {
 
     clock.advance(const Duration(minutes: 1));
     final throttledResult = await patchApp.checkAndUpdate(context);
-    expect(throttledResult, PatchResult.noUpdate);
+    expect(throttledResult, PatchResult.throttled);
     expect(updater.checkForUpdateCalls, 1);
   });
 

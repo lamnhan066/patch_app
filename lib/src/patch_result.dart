@@ -12,6 +12,10 @@ enum PatchResult {
   /// Indicates that no updater is available or no patch update was found.
   noUpdate,
 
+  /// Indicates that a check was skipped because the minimum interval
+  /// between checks has not yet elapsed (throttled).
+  throttled,
+
   /// Indicates that the app is already running the latest version.
   upToDate,
 
