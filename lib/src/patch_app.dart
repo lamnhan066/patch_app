@@ -26,7 +26,8 @@ class PatchApp {
   ///   whether the user agrees to restart after applying an update.
   /// - [minInterval] defines the minimum duration between update checks.
   ///   Defaults to 15 minutes.
-  /// - [onError] handles any error that occurs during the update process.
+  /// - [onError] is called when the update process throws.
+  ///   Errors are still reported as [PatchResult.failed].
   /// - [debug] enables debug logging if set to `true`.
   PatchApp({
     required this.confirmDialog,
@@ -245,9 +246,9 @@ class PatchApp {
   /// - [PatchResult.upToDate] if already on the latest version.
   /// - [PatchResult.restartRequired] if an update was applied and a restart is needed.
   /// - [PatchResult.cancelled] if the restart prompt was dismissed or skipped.
-  /// - [PatchResult.failed] if an error occurred and was caught by [onError].
+  /// - [PatchResult.failed] if an error occurs while checking or applying an update.
   ///
-  /// Throws the exception if [onError] is not provided.
+  /// If [onError] is provided, it runs before [PatchResult.failed] is returned.
   Future<PatchResult> checkAndUpdate(BuildContext context) async {
     if (!_updater.isAvailable) {
       _log('[PatchApp] Updater unavailable, initialization skipped.');
@@ -320,11 +321,8 @@ class PatchApp {
       return PatchResult.noUpdate;
     } catch (e, stack) {
       _log('[PatchApp] Error during update process: $e');
-      if (onError != null) {
-        onError!(e, stack);
-        return PatchResult.failed;
-      }
-      rethrow;
+      onError?.call(e, stack);
+      return PatchResult.failed;
     } finally {
       _isUpdating = false;
     }

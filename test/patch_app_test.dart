@@ -199,6 +199,63 @@ void main() {
     expect(restart.restartCalls, 0);
   });
 
+  testWidgets('returns failed and calls onError when update check throws', (
+    tester,
+  ) async {
+    final clock = _FakeClock(DateTime(2024, 1, 1, 12));
+    final updater = _FakeShorebirdUpdater(
+      onCheckForUpdate: ({UpdateTrack? track}) async {
+        throw StateError('boom');
+      },
+    );
+    final restart = _FakeTerminateRestart();
+    Object? reportedError;
+
+    final patchApp = PatchApp(
+      confirmDialog: (_) async => true,
+      updater: updater,
+      terminateRestart: restart,
+      now: clock.now,
+      onError: (error, stack) {
+        reportedError = error;
+      },
+    );
+
+    final context = await _pumpContext(tester);
+
+    final result = await patchApp.checkAndUpdate(context);
+
+    expect(result, PatchResult.failed);
+    expect(reportedError, isA<StateError>());
+    expect(restart.restartCalls, 0);
+  });
+
+  testWidgets('returns failed when onError is omitted and update throws', (
+    tester,
+  ) async {
+    final clock = _FakeClock(DateTime(2024, 1, 1, 12));
+    final updater = _FakeShorebirdUpdater(
+      onCheckForUpdate: ({UpdateTrack? track}) async {
+        throw StateError('boom');
+      },
+    );
+    final restart = _FakeTerminateRestart();
+
+    final patchApp = PatchApp(
+      confirmDialog: (_) async => true,
+      updater: updater,
+      terminateRestart: restart,
+      now: clock.now,
+    );
+
+    final context = await _pumpContext(tester);
+
+    final result = await patchApp.checkAndUpdate(context);
+
+    expect(result, PatchResult.failed);
+    expect(restart.restartCalls, 0);
+  });
+
   testWidgets('returns restartRequired when user accepts restart', (
     tester,
   ) async {
