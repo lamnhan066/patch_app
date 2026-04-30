@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0
+ 
+* **BREAKING CHANGE:**
+  * feat: make `onError` advisory only; `checkAndUpdate` now always returns `PatchResult.failed` for caught errors instead of rethrowing when no callback is provided.
+* feat: add `PatchResult.throttled` to indicate checks skipped because the configured `minInterval` between update checks has not yet elapsed.
+
 ## 0.2.0
 
 * **BREAKING CHANGE:**
