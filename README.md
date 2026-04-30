@@ -14,7 +14,7 @@ It automatically checks for Shorebird updates, applies patches, and restarts you
 * Register with `context:`, `navigatorKey:`, or `binding:` so startup checks can wait for the navigator to be ready
 * Optional `timeout` to stop deferred navigator/context retries after a max wait duration
 * Built-in `minInterval` to limit check frequency and prevent redundant checks
-* Optional error handling via callback or `PatchResult`
+* Optional error handling via callback, with `PatchResult.failed` for caught errors
 * Only report `PatchResult.restartRequired` when the restart dialog is accepted (or cannot be shown), while rejected prompts return `PatchResult.cancelled`
 
 ---
@@ -133,6 +133,5 @@ enum PatchResult {
 ## Tips
 
 * Always provide an `onError` callback in production to capture unexpected failures.
-
-  * If `onError` is provided, the method returns `PatchResult.failed` on error.
-  * If omitted, the error is rethrown.
+* If `onError` is provided, it runs before `PatchResult.failed` is returned.
+* If omitted, the error is still converted into `PatchResult.failed`.
