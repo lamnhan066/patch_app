@@ -28,16 +28,28 @@ Add the following to your **`Info.plist`** to enable restarts with [terminate_re
 ```xml
 <key>CFBundleURLTypes</key>
 <array>
-  <dict>
-    <key>CFBundleTypeRole</key>
-    <string>Editor</string>
-    <key>CFBundleURLName</key>
-    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-    <key>CFBundleURLSchemes</key>
-    <array>
-      <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-    </array>
-  </dict>
+    <dict>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+        </array>
+    </dict>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+        </array>
+    </dict>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+        </array>
+        <key>CFBundleURLName</key>
+        <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    </dict>
 </array>
 ```
 
