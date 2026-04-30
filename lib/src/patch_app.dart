@@ -321,6 +321,8 @@ class PatchApp {
       }
 
       return PatchResult.noUpdate;
+      // Catch both error and exception
+      // ignore: avoid_catches_without_on_clauses
     } catch (e, stack) {
       _log('[PatchApp] Error during update process: $e');
       onError?.call(e, stack);
