@@ -16,7 +16,7 @@ class _Home extends StatefulWidget {
 }
 
 class _HomeState extends State<_Home> {
-  final patchApp = PatchApp(
+  final patchApp = PatchApp.withDependencies(
     // Override updater so the example always shows the dialog flow.
     updater: _DemoUpdater(),
     confirmDialog: (context) => patchAppConfirmationDialog(context: context),

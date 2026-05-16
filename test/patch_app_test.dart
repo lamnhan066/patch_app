@@ -111,7 +111,7 @@ void main() {
     );
     final restart = _FakeRestart();
 
-    final patchApp = PatchApp(
+    final patchApp = PatchApp.withDependencies(
       confirmDialog: (_) async => true,
       updater: updater,
       restart: restart,
@@ -138,7 +138,7 @@ void main() {
     );
     final restart = _FakeRestart();
 
-    final patchApp = PatchApp(
+    final patchApp = PatchApp.withDependencies(
       confirmDialog: (_) async => true,
       updater: updater,
       restart: restart,
@@ -167,7 +167,7 @@ void main() {
     );
     final restart = _FakeRestart();
 
-    final patchApp = PatchApp(
+    final patchApp = PatchApp.withDependencies(
       confirmDialog: (_) async => false,
       updater: updater,
       restart: restart,
@@ -194,7 +194,7 @@ void main() {
     final restart = _FakeRestart();
     Object? reportedError;
 
-    final patchApp = PatchApp(
+    final patchApp = PatchApp.withDependencies(
       confirmDialog: (_) async => true,
       updater: updater,
       restart: restart,
@@ -224,7 +224,7 @@ void main() {
     );
     final restart = _FakeRestart();
 
-    final patchApp = PatchApp(
+    final patchApp = PatchApp.withDependencies(
       confirmDialog: (_) async => true,
       updater: updater,
       restart: restart,
@@ -249,7 +249,7 @@ void main() {
     );
     final restart = _FakeRestart();
 
-    final patchApp = PatchApp(
+    final patchApp = PatchApp.withDependencies(
       confirmDialog: (_) async => true,
       updater: updater,
       restart: restart,
@@ -270,7 +270,7 @@ void main() {
     final updater = _FakeShorebirdUpdater(isAvailable: false);
     final restart = _FakeRestart();
 
-    final patchApp = PatchApp(
+    final patchApp = PatchApp.withDependencies(
       confirmDialog: (_) async => true,
       updater: updater,
       restart: restart,
@@ -295,7 +295,7 @@ void main() {
     final restart = _FakeRestart();
     final navigatorKey = GlobalKey<NavigatorState>();
 
-    final patchApp = PatchApp(
+    final patchApp = PatchApp.withDependencies(
       confirmDialog: (_) async => true,
       updater: updater,
       restart: restart,
@@ -319,7 +319,7 @@ void main() {
     );
     final restart = _FakeRestart();
 
-    final patchApp = PatchApp(
+    final patchApp = PatchApp.withDependencies(
       confirmDialog: (_) async => true,
       updater: updater,
       restart: restart,
@@ -349,7 +349,7 @@ void main() {
     final restart = _FakeRestart();
     final navigatorKey = GlobalKey<NavigatorState>();
 
-    final patchApp = PatchApp(
+    final patchApp = PatchApp.withDependencies(
       confirmDialog: (_) async => true,
       updater: updater,
       restart: restart,
@@ -381,7 +381,7 @@ void main() {
     final restart = _FakeRestart();
     final navigatorKey = GlobalKey<NavigatorState>();
 
-    final patchApp = PatchApp(
+    final patchApp = PatchApp.withDependencies(
       confirmDialog: (_) async => true,
       updater: updater,
       restart: restart,
@@ -417,7 +417,7 @@ void main() {
     final restart = _FakeRestart();
     final navigatorKey = GlobalKey<NavigatorState>();
 
-    PatchApp(
+    PatchApp.withDependencies(
         confirmDialog: (_) async => true,
         updater: updater,
         restart: restart,
@@ -443,7 +443,7 @@ void main() {
     final wrongNavigatorKey = GlobalKey<NavigatorState>();
     final attachedNavigatorKey = GlobalKey<NavigatorState>();
 
-    final patchApp = PatchApp(
+    final patchApp = PatchApp.withDependencies(
       confirmDialog: (_) async => true,
       updater: updater,
       restart: restart,
@@ -486,7 +486,7 @@ void main() {
     final wrongNavigatorKey = GlobalKey<NavigatorState>();
     final attachedNavigatorKey = GlobalKey<NavigatorState>();
 
-    final patchApp = PatchApp(
+    final patchApp = PatchApp.withDependencies(
       confirmDialog: (_) async => true,
       updater: updater,
       restart: restart,
@@ -523,7 +523,7 @@ void main() {
     final wrongNavigatorKey = GlobalKey<NavigatorState>();
     final attachedNavigatorKey = GlobalKey<NavigatorState>();
 
-    final patchApp = PatchApp(
+    final patchApp = PatchApp.withDependencies(
       confirmDialog: (_) async => true,
       updater: updater,
       restart: restart,

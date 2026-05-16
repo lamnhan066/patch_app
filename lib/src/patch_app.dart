@@ -47,6 +47,20 @@ class PatchApp {
     this.minInterval = const Duration(minutes: 15),
     this.onError,
     this.debug = false,
+  }) : _updater = ShorebirdUpdater(),
+       _restart = const DefaultRestart(),
+       _now = DateTime.now;
+
+  /// Creates a new instance of [PatchApp] with test dependencies.
+  ///
+  /// This constructor allows injecting mock implementations of dependencies
+  /// for testing purposes.
+  PatchApp.withDependencies({
+    required this.confirmDialog,
+    this.onResult,
+    this.minInterval = const Duration(minutes: 15),
+    this.onError,
+    this.debug = false,
     ShorebirdUpdater? updater,
     Restart? restart,
     DateTime Function()? now,
