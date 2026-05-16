@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0
+
+* feat: supports Windows, MacOS and Linux via `restart_app` package.
+* feat: add optional `onResult` callback for handling `PatchResult` after update runs.
+* feat: enhance restart flow to return success status; update `PatchResult` to report restart success.
+* **[BREAKING CHANGE]:** feat: implement custom `Restart` abstraction to replace the `TerminalRestart`.
+* **[BREAKING CHANGE]:** refactor: simplify the `PatchApp` constructor by removing the test dependencies and move it to `PatchApp.withDependencies`.
+
 ## 0.3.0
  
 * **BREAKING CHANGE:**
