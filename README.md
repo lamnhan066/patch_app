@@ -1,8 +1,8 @@
 # Patch App
 
-A lightweight helper to **patch your Flutter app at runtime** using [shorebird_code_push](https://pub.dev/packages/shorebird_code_push) and [terminate_restart](https://pub.dev/packages/terminate_restart).
+A lightweight helper to **patch your Flutter app at runtime** using [shorebird_code_push](https://pub.dev/packages/shorebird_code_push).
 
-It automatically checks for Shorebird updates, applies patches, and restarts your app safely when accepted.
+It automatically checks for Shorebird updates, applies patches, and restarts your app safely when accepted. Restart behavior is provided by an internal `Restart` abstraction — by default the package uses `terminate_restart` on mobile and web, and `restart_app` on other desktop platforms, but you can inject a custom `restart` implementation (useful for tests).
 
 ---
 
@@ -11,6 +11,7 @@ It automatically checks for Shorebird updates, applies patches, and restarts you
 * Check and apply Shorebird patches dynamically
 * Show a customizable restart confirmation dialog
 * Restart the app safely with one line of code
+* Inject a custom `restart` implementation (handy for testing)
 * Register with `context:`, `navigatorKey:`, or `binding:` so startup checks can wait for the navigator to be ready
 * Optional `timeout` to stop deferred navigator/context retries after a max wait duration
 * Built-in `minInterval` to limit check frequency and prevent redundant checks
@@ -23,7 +24,7 @@ It automatically checks for Shorebird updates, applies patches, and restarts you
 
 ### iOS
 
-Add the following to your **`Info.plist`** to enable restarts with [terminate_restart](https://pub.dev/packages/terminate_restart):
+Add the following to your **`Info.plist`** to enable restarts on iOS (used by the package's default restart implementation which relies on [terminate_restart](https://pub.dev/packages/terminate_restart)):
 
 ```xml
 <key>CFBundleURLTypes</key>
@@ -123,6 +124,20 @@ PatchAppScope(
 * **`unregister()`**
   Cleans up the lifecycle listener created by `register()`.
   Always call this in `dispose()`.
+
+### Testing / Custom restart implementations
+
+The package exposes an internal `Restart` abstraction (with `Future<void> initialize()` and `Future<void> restart()`), and the `PatchApp` constructor accepts an optional `restart:` argument. In normal apps you don't need to pass anything — the default implementation handles platform specifics. In tests you can pass a fake implementation to avoid performing real restarts:
+
+```dart
+final patchApp = PatchApp(
+  confirmDialog: (_) async => true,
+  // Optional: inject a test-friendly restart implementation
+  restart: MyFakeRestart(),
+);
+```
+
+Your fake should implement two async methods: `initialize()` and `restart()`.
 
 ---
 

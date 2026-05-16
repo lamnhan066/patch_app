@@ -11,10 +11,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  restart_app: ^1.8.3
   shorebird_code_push: ^2.0.6
   terminate_restart: ^1.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  very_good_analysis: ^10.0.0
+  very_good_analysis: ^10.2.0

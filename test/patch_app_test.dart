@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:patch_app/patch_app.dart';
+import 'package:patch_app/src/restart.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
-import 'package:terminate_restart/terminate_restart.dart';
 
 class _FakeClock {
   _FakeClock(this._current);
@@ -60,35 +60,18 @@ class _FakeShorebirdUpdater implements ShorebirdUpdater {
   }
 }
 
-class _FakeTerminateRestart implements TerminateRestart {
+class _FakeRestart implements Restart {
   bool initialized = false;
   int restartCalls = 0;
 
   @override
-  void initialize({VoidCallback? onRootReset}) {
+  Future<void> initialize() async {
     initialized = true;
-    onRootReset?.call();
   }
 
   @override
-  Future<bool> restartApp({required TerminateRestartOptions options}) async {
+  Future<void> restart() async {
     restartCalls++;
-    return true;
-  }
-
-  @override
-  Future<bool> restartAppWithConfirmation(
-    BuildContext context, {
-    String title = 'Restart Required',
-    String message = 'The app needs to restart to apply changes.',
-    String confirmText = 'Restart Now',
-    String cancelText = 'Later',
-    bool clearData = false,
-    bool preserveKeychain = false,
-    bool preserveUserDefaults = false,
-    bool terminate = true,
-  }) async {
-    return false;
   }
 }
 
@@ -125,12 +108,12 @@ void main() {
     final updater = _FakeShorebirdUpdater(
       onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
     );
-    final restart = _FakeTerminateRestart();
+    final restart = _FakeRestart();
 
     final patchApp = PatchApp(
       confirmDialog: (_) async => true,
       updater: updater,
-      terminateRestart: restart,
+      restart: restart,
       now: clock.now,
     );
 
@@ -152,12 +135,12 @@ void main() {
     final updater = _FakeShorebirdUpdater(
       onCheckForUpdate: ({UpdateTrack? track}) => completer.future,
     );
-    final restart = _FakeTerminateRestart();
+    final restart = _FakeRestart();
 
     final patchApp = PatchApp(
       confirmDialog: (_) async => true,
       updater: updater,
-      terminateRestart: restart,
+      restart: restart,
       now: clock.now,
     );
 
@@ -182,12 +165,12 @@ void main() {
       onCheckForUpdate:
           ({UpdateTrack? track}) async => UpdateStatus.restartRequired,
     );
-    final restart = _FakeTerminateRestart();
+    final restart = _FakeRestart();
 
     final patchApp = PatchApp(
       confirmDialog: (_) async => false,
       updater: updater,
-      terminateRestart: restart,
+      restart: restart,
       now: clock.now,
     );
 
@@ -208,13 +191,13 @@ void main() {
         throw StateError('boom');
       },
     );
-    final restart = _FakeTerminateRestart();
+    final restart = _FakeRestart();
     Object? reportedError;
 
     final patchApp = PatchApp(
       confirmDialog: (_) async => true,
       updater: updater,
-      terminateRestart: restart,
+      restart: restart,
       now: clock.now,
       onError: (error, stack) {
         reportedError = error;
@@ -239,12 +222,12 @@ void main() {
         throw StateError('boom');
       },
     );
-    final restart = _FakeTerminateRestart();
+    final restart = _FakeRestart();
 
     final patchApp = PatchApp(
       confirmDialog: (_) async => true,
       updater: updater,
-      terminateRestart: restart,
+      restart: restart,
       now: clock.now,
     );
 
@@ -264,12 +247,12 @@ void main() {
       onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.outdated,
       onUpdate: ({UpdateTrack? track}) async {},
     );
-    final restart = _FakeTerminateRestart();
+    final restart = _FakeRestart();
 
     final patchApp = PatchApp(
       confirmDialog: (_) async => true,
       updater: updater,
-      terminateRestart: restart,
+      restart: restart,
       now: clock.now,
     );
 
@@ -285,12 +268,12 @@ void main() {
   testWidgets('returns noUpdate when updater is unavailable', (tester) async {
     final clock = _FakeClock(DateTime(2024, 1, 1, 12));
     final updater = _FakeShorebirdUpdater(isAvailable: false);
-    final restart = _FakeTerminateRestart();
+    final restart = _FakeRestart();
 
     final patchApp = PatchApp(
       confirmDialog: (_) async => true,
       updater: updater,
-      terminateRestart: restart,
+      restart: restart,
       now: clock.now,
     );
 
@@ -309,13 +292,13 @@ void main() {
     final updater = _FakeShorebirdUpdater(
       onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
     );
-    final restart = _FakeTerminateRestart();
+    final restart = _FakeRestart();
     final navigatorKey = GlobalKey<NavigatorState>();
 
     final patchApp = PatchApp(
       confirmDialog: (_) async => true,
       updater: updater,
-      terminateRestart: restart,
+      restart: restart,
       now: clock.now,
     )..register(navigatorKey: navigatorKey);
 
@@ -334,12 +317,12 @@ void main() {
     final updater = _FakeShorebirdUpdater(
       onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
     );
-    final restart = _FakeTerminateRestart();
+    final restart = _FakeRestart();
 
     final patchApp = PatchApp(
       confirmDialog: (_) async => true,
       updater: updater,
-      terminateRestart: restart,
+      restart: restart,
       now: clock.now,
     );
 
@@ -363,13 +346,13 @@ void main() {
     final updater = _FakeShorebirdUpdater(
       onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
     );
-    final restart = _FakeTerminateRestart();
+    final restart = _FakeRestart();
     final navigatorKey = GlobalKey<NavigatorState>();
 
     final patchApp = PatchApp(
       confirmDialog: (_) async => true,
       updater: updater,
-      terminateRestart: restart,
+      restart: restart,
       now: clock.now,
     );
 
@@ -395,13 +378,13 @@ void main() {
     final updater = _FakeShorebirdUpdater(
       onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
     );
-    final restart = _FakeTerminateRestart();
+    final restart = _FakeRestart();
     final navigatorKey = GlobalKey<NavigatorState>();
 
     final patchApp = PatchApp(
       confirmDialog: (_) async => true,
       updater: updater,
-      terminateRestart: restart,
+      restart: restart,
       now: clock.now,
     );
 
@@ -431,13 +414,13 @@ void main() {
     final updater = _FakeShorebirdUpdater(
       onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
     );
-    final restart = _FakeTerminateRestart();
+    final restart = _FakeRestart();
     final navigatorKey = GlobalKey<NavigatorState>();
 
     PatchApp(
         confirmDialog: (_) async => true,
         updater: updater,
-        terminateRestart: restart,
+        restart: restart,
         now: clock.now,
       )
       ..register(navigatorKey: navigatorKey)
@@ -456,14 +439,14 @@ void main() {
     final updater = _FakeShorebirdUpdater(
       onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
     );
-    final restart = _FakeTerminateRestart();
+    final restart = _FakeRestart();
     final wrongNavigatorKey = GlobalKey<NavigatorState>();
     final attachedNavigatorKey = GlobalKey<NavigatorState>();
 
     final patchApp = PatchApp(
       confirmDialog: (_) async => true,
       updater: updater,
-      terminateRestart: restart,
+      restart: restart,
       now: clock.now,
     );
 
@@ -499,14 +482,14 @@ void main() {
     final updater = _FakeShorebirdUpdater(
       onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
     );
-    final restart = _FakeTerminateRestart();
+    final restart = _FakeRestart();
     final wrongNavigatorKey = GlobalKey<NavigatorState>();
     final attachedNavigatorKey = GlobalKey<NavigatorState>();
 
     final patchApp = PatchApp(
       confirmDialog: (_) async => true,
       updater: updater,
-      terminateRestart: restart,
+      restart: restart,
       now: clock.now,
     )..register(
       navigatorKey: wrongNavigatorKey,
@@ -536,14 +519,14 @@ void main() {
     final updater = _FakeShorebirdUpdater(
       onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
     );
-    final restart = _FakeTerminateRestart();
+    final restart = _FakeRestart();
     final wrongNavigatorKey = GlobalKey<NavigatorState>();
     final attachedNavigatorKey = GlobalKey<NavigatorState>();
 
     final patchApp = PatchApp(
       confirmDialog: (_) async => true,
       updater: updater,
-      terminateRestart: restart,
+      restart: restart,
       now: clock.now,
     );
 

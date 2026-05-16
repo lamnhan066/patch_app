@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:patch_app/src/patch_result.dart';
+import 'package:patch_app/src/restart.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
 import 'package:terminate_restart/terminate_restart.dart';
 
@@ -35,10 +36,10 @@ class PatchApp {
     this.onError,
     this.debug = false,
     ShorebirdUpdater? updater,
-    TerminateRestart? terminateRestart,
+    Restart? restart,
     DateTime Function()? now,
   }) : _updater = updater ?? ShorebirdUpdater(),
-       _terminateRestart = terminateRestart ?? TerminateRestart.instance,
+       _restart = restart ?? const DefaultRestart(),
        _now = now ?? DateTime.now;
 
   /// A callback to display a confirmation dialog before restarting the app.
@@ -63,7 +64,7 @@ class PatchApp {
   final ShorebirdUpdater _updater;
 
   /// Handles application restart functionality.
-  final TerminateRestart _terminateRestart;
+  final Restart _restart;
 
   /// Clock used for determining throttling intervals.
   final DateTime Function() _now;
@@ -258,7 +259,7 @@ class PatchApp {
     }
 
     if (!_isInitialized) {
-      _terminateRestart.initialize();
+      await _restart.initialize();
       _isInitialized = true;
     }
 
@@ -304,9 +305,7 @@ class PatchApp {
           _log('[PatchApp] Confirmation dialog result: $result');
           if (result) {
             _log('[PatchApp] Restarting app...');
-            await _terminateRestart.restartApp(
-              options: const TerminateRestartOptions(),
-            );
+            await _restart.restart();
             _log('[PatchApp] The app cannot be restarted, restart required.');
             return PatchResult.restartRequired;
           }
