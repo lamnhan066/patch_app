@@ -1,6 +1,5 @@
 name: patch_app
-description: "A lightweight helper to patch your Flutter app at runtime using
-  shorebird_code_push, terminate_restart, and restart_app"
+description: "Lightweight helper for Shorebird Code Push: detects and applies updates, then restarts the app with confirmation."
 version: 0.3.0
 homepage: https://github.com/lamnhan066/patch_app
 
