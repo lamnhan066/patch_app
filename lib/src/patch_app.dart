@@ -4,7 +4,6 @@ import 'package:flutter/widgets.dart';
 import 'package:patch_app/src/patch_result.dart';
 import 'package:patch_app/src/restart.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
-import 'package:terminate_restart/terminate_restart.dart';
 
 /// A helper class that manages Shorebird code push updates and restarts.
 ///
@@ -93,7 +92,7 @@ class PatchApp {
   /// Tracks whether the registration flow is active.
   bool _isActive = true;
 
-  /// Tracks whether initialization (e.g., [TerminateRestart]) has been performed.
+  /// Tracks whether initialization (e.g., [Restart]) has been performed.
   bool _isInitialized = false;
 
   /// Prevents concurrent update operations.

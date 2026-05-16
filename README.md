@@ -16,6 +16,7 @@ It automatically checks for Shorebird updates, applies patches, and restarts you
 * Optional `timeout` to stop deferred navigator/context retries after a max wait duration
 * Built-in `minInterval` to limit check frequency and prevent redundant checks
 * Optional error handling via callback, with `PatchResult.failed` for caught errors
+* Return `PatchResult.success` when a patch is applied and no restart is needed
 * Only report `PatchResult.restartRequired` when the restart dialog is accepted (or cannot be shown), while rejected prompts return `PatchResult.cancelled`
 
 ---
@@ -127,7 +128,7 @@ PatchAppScope(
 
 ### Testing / Custom restart implementations
 
-The package exposes an internal `Restart` abstraction (with `Future<void> initialize()` and `Future<void> restart()`), and the `PatchApp` constructor accepts an optional `restart:` argument. In normal apps you don't need to pass anything — the default implementation handles platform specifics. In tests you can pass a fake implementation to avoid performing real restarts:
+The package exposes an internal `Restart` abstraction (with `Future<void> initialize()` and `Future<bool> restart()`), and the `PatchApp` constructor accepts an optional `restart:` argument. In normal apps you don't need to pass anything — the default implementation handles platform specifics. In tests you can pass a fake implementation to avoid performing real restarts:
 
 ```dart
 final patchApp = PatchApp(
@@ -138,6 +139,7 @@ final patchApp = PatchApp(
 ```
 
 Your fake should implement two async methods: `initialize()` and `restart()`.
+The `restart()` method should return `true` when the restart succeeded, or `false` when it did not.
 
 ---
 
@@ -151,15 +153,16 @@ enum PatchResult {
   cancelled,       // Restart prompt dismissed or skipped
   restartRequired, // Patch applied; restart needed
   failed,          // Error during the update
+  success,         // Patch applied and no restart needed
 }
 ```
 
 `throttled` is returned when a call to `checkAndUpdate` is skipped because the
 configured `minInterval` between checks has not yet elapsed. `cancelled` is
-returned when the confirmation dialog is dismissed, while `restartRequired` is
-only emitted after the user accepts a restart (or if the dialog cannot be
-shown because the context was unmounted), signaling that a restart is still
-needed.
+returned when the confirmation dialog is dismissed. `success` is returned when
+a patch was applied and no restart is required. `restartRequired` is only
+emitted after the user accepts a restart (or if the dialog cannot be shown
+because the context was unmounted), signaling that a restart is still needed.
 
 ---
 
