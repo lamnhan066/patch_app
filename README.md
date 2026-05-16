@@ -16,7 +16,7 @@ It automatically checks for Shorebird updates, applies patches, and restarts you
 * Optional `timeout` to stop deferred navigator/context retries after a max wait duration
 * Built-in `minInterval` to limit check frequency and prevent redundant checks
 * Optional error handling via callback, with `PatchResult.failed` for caught errors
-* Return `PatchResult.success` when a patch is applied and no restart is needed
+* Return `PatchResult.success` when a patch is applied and the restart completed successfully (if a restart was performed)
 * Only report `PatchResult.restartRequired` when the restart dialog is accepted (or cannot be shown), while rejected prompts return `PatchResult.cancelled`
 
 * Optional `onResult` callback invoked after each `checkAndUpdate` with the
@@ -183,13 +183,12 @@ enum PatchResult {
   cancelled,       // Restart prompt dismissed or skipped
   restartRequired, // Patch applied; restart needed
   failed,          // Error during the update
-  success,         // Patch applied and no restart needed
+  success,         // Patch applied and restart completed successfully (may not be returned if the process exits before the restart API returns)
 }
 ```
 
 `throttled` is returned when a call to `checkAndUpdate` is skipped because the
 configured `minInterval` between checks has not yet elapsed. `cancelled` is
 returned when the confirmation dialog is dismissed. `success` is returned when
-a patch was applied and no restart is required. `restartRequired` is only
-emitted after the user accepts a restart (or if the dialog cannot be shown
-because the context was unmounted), signaling that a restart is still needed.
+an update was applied and the app was successfully restarted — note this may
+not be returned if the process exits before the restart API can return. `restartRequired` is emitted when a restart is needed but could not be completed automatically (for example when the restart API returns `false`, or when the dialog cannot be shown because the context was unmounted), signaling that a manual restart is still needed.
