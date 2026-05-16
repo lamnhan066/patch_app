@@ -305,9 +305,16 @@ class PatchApp {
           _log('[PatchApp] Confirmation dialog result: $result');
           if (result) {
             _log('[PatchApp] Restarting app...');
-            await _restart.restart();
-            _log('[PatchApp] The app cannot be restarted, restart required.');
-            return PatchResult.restartRequired;
+            final result = await _restart.restart();
+            if (result) {
+              _log('[PatchApp] App restarted successfully.');
+              return PatchResult.success;
+            } else {
+              _log(
+                '[PatchApp] The app cannot be restarted, manual restart required.',
+              );
+              return PatchResult.restartRequired;
+            }
           }
           _log('[PatchApp] Restart cancelled by user.');
           return PatchResult.cancelled;

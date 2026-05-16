@@ -70,8 +70,9 @@ class _FakeRestart implements Restart {
   }
 
   @override
-  Future<void> restart() async {
+  Future<bool> restart() async {
     restartCalls++;
+    return true;
   }
 }
 
@@ -106,7 +107,7 @@ void main() {
   testWidgets('throttles update checks based on minInterval', (tester) async {
     final clock = _FakeClock(DateTime(2024, 1, 1, 12));
     final updater = _FakeShorebirdUpdater(
-      onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
+      onCheckForUpdate: ({track}) async => UpdateStatus.upToDate,
     );
     final restart = _FakeRestart();
 
@@ -133,7 +134,7 @@ void main() {
     final clock = _FakeClock(DateTime(2024, 1, 1, 12));
     final completer = Completer<UpdateStatus>();
     final updater = _FakeShorebirdUpdater(
-      onCheckForUpdate: ({UpdateTrack? track}) => completer.future,
+      onCheckForUpdate: ({track}) => completer.future,
     );
     final restart = _FakeRestart();
 
@@ -162,8 +163,7 @@ void main() {
   ) async {
     final clock = _FakeClock(DateTime(2024, 1, 1, 12));
     final updater = _FakeShorebirdUpdater(
-      onCheckForUpdate:
-          ({UpdateTrack? track}) async => UpdateStatus.restartRequired,
+      onCheckForUpdate: ({track}) async => UpdateStatus.restartRequired,
     );
     final restart = _FakeRestart();
 
@@ -187,7 +187,7 @@ void main() {
   ) async {
     final clock = _FakeClock(DateTime(2024, 1, 1, 12));
     final updater = _FakeShorebirdUpdater(
-      onCheckForUpdate: ({UpdateTrack? track}) async {
+      onCheckForUpdate: ({track}) async {
         throw StateError('boom');
       },
     );
@@ -218,7 +218,7 @@ void main() {
   ) async {
     final clock = _FakeClock(DateTime(2024, 1, 1, 12));
     final updater = _FakeShorebirdUpdater(
-      onCheckForUpdate: ({UpdateTrack? track}) async {
+      onCheckForUpdate: ({track}) async {
         throw StateError('boom');
       },
     );
@@ -244,8 +244,8 @@ void main() {
   ) async {
     final clock = _FakeClock(DateTime(2024, 1, 1, 12));
     final updater = _FakeShorebirdUpdater(
-      onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.outdated,
-      onUpdate: ({UpdateTrack? track}) async {},
+      onCheckForUpdate: ({track}) async => UpdateStatus.outdated,
+      onUpdate: ({track}) async {},
     );
     final restart = _FakeRestart();
 
@@ -260,7 +260,7 @@ void main() {
 
     final result = await patchApp.checkAndUpdate(context);
 
-    expect(result, PatchResult.restartRequired);
+    expect(result, PatchResult.success);
     expect(updater.updateCalls, 1);
     expect(restart.restartCalls, 1);
   });
@@ -290,7 +290,7 @@ void main() {
   ) async {
     final clock = _FakeClock(DateTime(2024, 1, 1, 12));
     final updater = _FakeShorebirdUpdater(
-      onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
+      onCheckForUpdate: ({track}) async => UpdateStatus.upToDate,
     );
     final restart = _FakeRestart();
     final navigatorKey = GlobalKey<NavigatorState>();
@@ -315,7 +315,7 @@ void main() {
   testWidgets('PatchAppScope registers automatically', (tester) async {
     final clock = _FakeClock(DateTime(2024, 1, 1, 12));
     final updater = _FakeShorebirdUpdater(
-      onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
+      onCheckForUpdate: ({track}) async => UpdateStatus.upToDate,
     );
     final restart = _FakeRestart();
 
@@ -344,7 +344,7 @@ void main() {
   ) async {
     final clock = _FakeClock(DateTime(2024, 1, 1, 12));
     final updater = _FakeShorebirdUpdater(
-      onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
+      onCheckForUpdate: ({track}) async => UpdateStatus.upToDate,
     );
     final restart = _FakeRestart();
     final navigatorKey = GlobalKey<NavigatorState>();
@@ -376,7 +376,7 @@ void main() {
   ) async {
     final clock = _FakeClock(DateTime(2024, 1, 1, 12));
     final updater = _FakeShorebirdUpdater(
-      onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
+      onCheckForUpdate: ({track}) async => UpdateStatus.upToDate,
     );
     final restart = _FakeRestart();
     final navigatorKey = GlobalKey<NavigatorState>();
@@ -412,7 +412,7 @@ void main() {
   ) async {
     final clock = _FakeClock(DateTime(2024, 1, 1, 12));
     final updater = _FakeShorebirdUpdater(
-      onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
+      onCheckForUpdate: ({track}) async => UpdateStatus.upToDate,
     );
     final restart = _FakeRestart();
     final navigatorKey = GlobalKey<NavigatorState>();
@@ -437,7 +437,7 @@ void main() {
   ) async {
     final clock = _FakeClock(DateTime(2024, 1, 1, 12));
     final updater = _FakeShorebirdUpdater(
-      onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
+      onCheckForUpdate: ({track}) async => UpdateStatus.upToDate,
     );
     final restart = _FakeRestart();
     final wrongNavigatorKey = GlobalKey<NavigatorState>();
@@ -480,7 +480,7 @@ void main() {
   testWidgets('register stops retrying after timeout', (tester) async {
     final clock = _FakeClock(DateTime(2024, 1, 1, 12));
     final updater = _FakeShorebirdUpdater(
-      onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
+      onCheckForUpdate: ({track}) async => UpdateStatus.upToDate,
     );
     final restart = _FakeRestart();
     final wrongNavigatorKey = GlobalKey<NavigatorState>();
@@ -517,7 +517,7 @@ void main() {
   ) async {
     final clock = _FakeClock(DateTime(2024, 1, 1, 12));
     final updater = _FakeShorebirdUpdater(
-      onCheckForUpdate: ({UpdateTrack? track}) async => UpdateStatus.upToDate,
+      onCheckForUpdate: ({track}) async => UpdateStatus.upToDate,
     );
     final restart = _FakeRestart();
     final wrongNavigatorKey = GlobalKey<NavigatorState>();

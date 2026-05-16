@@ -28,4 +28,7 @@ enum PatchResult {
 
   /// Indicates that an error occurred during the patching or update process.
   failed,
+
+  /// Indicates that the patch was successfully applied and no restart is needed.
+  success,
 }

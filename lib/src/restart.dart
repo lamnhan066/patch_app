@@ -13,7 +13,7 @@ abstract class Restart {
   Future<void> initialize();
 
   /// Restarts the application.
-  Future<void> restart();
+  Future<bool> restart();
 }
 
 /// A default implementation of the [Restart] interface that uses
@@ -39,13 +39,14 @@ class DefaultRestart implements Restart {
   }
 
   @override
-  Future<void> restart() async {
+  Future<bool> restart() async {
     if (kIsWeb || Platform.isAndroid || Platform.isIOS) {
-      await TerminateRestart.instance.restartApp(
+      return TerminateRestart.instance.restartApp(
         options: const TerminateRestartOptions(),
       );
     } else {
-      await restart_app.Restart.restartApp();
+      final result = await restart_app.Restart.restartApp(forceKill: true);
+      return result.success;
     }
   }
 }
