@@ -14,6 +14,18 @@ import 'package:shorebird_code_push/shorebird_code_push.dart';
 /// ```dart
 /// await PatchApp(
 ///   confirmDialog: (context) => patchAppConfirmationDialog(context: context),
+///   onResult: (context, result) {
+///     if (result == PatchResult.restartRequired) {
+///       await patchAppConfirmationDialog(
+///         context: context,
+///         title: 'Manual Restart Required',
+///         content: 'The app cannot restart automatically to apply the update.\n\n'
+///             'Please restart the app manually to apply the latest updates.',
+///         restartLabel: 'OK',
+///         cancelLabel: 'CANCEL',
+///       );
+///     }
+///   },
 /// ).checkAndUpdate(context);
 /// ```
 ///
@@ -31,6 +43,7 @@ class PatchApp {
   /// - [debug] enables debug logging if set to `true`.
   PatchApp({
     required this.confirmDialog,
+    this.onResult,
     this.minInterval = const Duration(minutes: 15),
     this.onError,
     this.debug = false,
@@ -45,6 +58,14 @@ class PatchApp {
   ///
   /// Must return `true` to proceed with the restart, or `false` to cancel.
   final Future<bool> Function(BuildContext context) confirmDialog;
+
+  /// An optional callback that is called with the [BuildContext] and [PatchResult]
+  /// after an update check is performed.
+  ///
+  /// This can be used to show custom notifications or perform actions based on
+  /// the result.
+  final Future<void> Function(BuildContext context, PatchResult result)?
+  onResult;
 
   /// The minimum time interval between consecutive update checks.
   final Duration minInterval;
@@ -252,6 +273,30 @@ class PatchApp {
   ///
   /// If [onError] is provided, it runs before [PatchResult.failed] is returned.
   Future<PatchResult> checkAndUpdate(BuildContext context) async {
+    final result = await _checkAndUpdate(context);
+    // The developer will check `context.mounted` themselves
+    // ignore: use_build_context_synchronously
+    await onResult?.call(context, result);
+    return result;
+  }
+
+  /// Checks for Shorebird updates and applies them if available.
+  ///
+  /// - Verifies whether updates are available via [ShorebirdUpdater].
+  /// - Skips checks if called too soon after a previous one.
+  /// - Prompts the user via [confirmDialog] before restarting.
+  ///
+  /// Returns a [PatchResult] indicating the result:
+  /// - [PatchResult.noUpdate] if no update was found.
+  /// - [PatchResult.throttled] if the check was skipped because the minimum
+  ///   interval between checks has not been reached.
+  /// - [PatchResult.upToDate] if already on the latest version.
+  /// - [PatchResult.restartRequired] if an update was applied and a restart is needed.
+  /// - [PatchResult.cancelled] if the restart prompt was dismissed or skipped.
+  /// - [PatchResult.failed] if an error occurs while checking or applying an update.
+  ///
+  /// If [onError] is provided, it runs before [PatchResult.failed] is returned.
+  Future<PatchResult> _checkAndUpdate(BuildContext context) async {
     if (!_updater.isAvailable) {
       _log('[PatchApp] Updater unavailable, initialization skipped.');
       return PatchResult.noUpdate;

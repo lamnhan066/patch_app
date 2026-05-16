@@ -19,6 +19,10 @@ It automatically checks for Shorebird updates, applies patches, and restarts you
 * Return `PatchResult.success` when a patch is applied and no restart is needed
 * Only report `PatchResult.restartRequired` when the restart dialog is accepted (or cannot be shown), while rejected prompts return `PatchResult.cancelled`
 
+* Optional `onResult` callback invoked after each `checkAndUpdate` with the
+  active `BuildContext` and the resulting `PatchResult` (useful to show
+  follow-up UI like a manual-restart dialog).
+
 ---
 
 ## Setup
@@ -55,7 +59,7 @@ Add the following to your **`Info.plist`** to enable restarts on iOS (used by th
 </array>
 ```
 
-### Android
+### Android, Windows, MacOS, Linux and Web
 
 No configuration required.
 
@@ -141,6 +145,32 @@ final patchApp = PatchApp(
 Your fake should implement two async methods: `initialize()` and `restart()`.
 The `restart()` method should return `true` when the restart succeeded, or `false` when it did not.
 
+### `onResult` callback
+
+`PatchApp` accepts an optional `onResult` callback with the signature `Future<void> Function(BuildContext context, PatchResult result)? onResult`. This is useful to present follow-up UI (for example, when the updater reports that a manual restart is required):
+
+```dart
+final patchApp = PatchApp(
+  confirmDialog: (context) => patchAppConfirmationDialog(context),
+  onResult: (context, result) async {
+    // The `context.mounted` should be checked before use
+    if (context.mounted && result == PatchResult.restartRequired) {
+      await patchAppConfirmationDialog(
+        context: context,
+        title: 'Manual Restart Required',
+        content: 'The app cannot restart automatically to apply the update.\n\n'
+            'Please restart the app manually to apply the latest updates.',
+        restartLabel: 'OK',
+        cancelLabel: 'CANCEL',
+      );
+    }
+  },
+);
+```
+
+The callback runs only when `context.mounted` is true; otherwise it is
+skipped to avoid showing dialogs on unmounted contexts.
+
 ---
 
 ## Patch Results
@@ -163,11 +193,3 @@ returned when the confirmation dialog is dismissed. `success` is returned when
 a patch was applied and no restart is required. `restartRequired` is only
 emitted after the user accepts a restart (or if the dialog cannot be shown
 because the context was unmounted), signaling that a restart is still needed.
-
----
-
-## Tips
-
-* Always provide an `onError` callback in production to capture unexpected failures.
-* If `onError` is provided, it runs before `PatchResult.failed` is returned.
-* If omitted, the error is still converted into `PatchResult.failed`.
