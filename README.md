@@ -60,6 +60,13 @@ Add the following to your **`Info.plist`** to enable restarts on iOS (used by th
 
 No configuration required.
 
+### More information about the setup
+
+- terminate_restart: https://pub.dev/packages/terminate_restart
+- restart_app: https://pub.dev/packages/restart_app
+
+When this package was first written, `restart_app` only supported restarting on iOS by reopening the app from a notification. At the time Shorebird supported only Android and iOS, so I chose `terminate_restart` because it worked reliably for my use cases. For patch_app v0.4.0 I aimed to support restarts across all platforms (Shorebird now supports them), and I re-evaluated `restart_app`. Its iOS implementation has improved but requires an additional native configuration step. To avoid forcing native changes on users, I kept both packages: `terminate_restart` for mobile and web, and `restart_app` for desktop.
+
 ---
 
 ## Usage
