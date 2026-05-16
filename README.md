@@ -18,10 +18,7 @@ It automatically checks for Shorebird updates, applies patches, and restarts you
 * Optional error handling via callback, with `PatchResult.failed` for caught errors
 * Return `PatchResult.success` when a patch is applied and the restart completed successfully (if a restart was performed)
 * Only report `PatchResult.restartRequired` when the restart dialog is accepted (or cannot be shown), while rejected prompts return `PatchResult.cancelled`
-
-* Optional `onResult` callback invoked after each `checkAndUpdate` with the
-  active `BuildContext` and the resulting `PatchResult` (useful to show
-  follow-up UI like a manual-restart dialog).
+* Optional `onResult` callback invoked after each `checkAndUpdate` with the active `BuildContext` and the resulting `PatchResult` (useful to show follow-up UI like a manual-restart dialog).
 
 ---
 
