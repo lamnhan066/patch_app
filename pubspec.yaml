@@ -1,6 +1,6 @@
 name: patch_app
 description: "Lightweight helper for Shorebird Code Push: detects and applies updates, then restarts the app with confirmation."
-version: 0.4.0
+version: 0.4.1
 homepage: https://github.com/lamnhan066/patch_app
 
 environment:

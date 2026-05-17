@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1
+
+* feat: allow customizable barrier dismissibility in `patchAppConfirmationDialog`.
+
 ## 0.4.0
 
 * feat: supports Windows, MacOS and Linux via `restart_app` package.
