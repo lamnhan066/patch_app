@@ -12,6 +12,7 @@ Future<bool> patchAppConfirmationDialog({
           'Would you like to restart the app to apply the update?',
   String cancelLabel = 'CANCEL',
   String restartLabel = 'RESTART',
+  bool barrierDismissible = false,
 
   /// If true, the dialog will be shown in the root navigator.
   bool useRootNavigator = true,
@@ -26,7 +27,7 @@ Future<bool> patchAppConfirmationDialog({
 
   final confirmed = await showDialog<bool>(
     context: context,
-    barrierDismissible: !isForce,
+    barrierDismissible: barrierDismissible,
     useRootNavigator: useRootNavigator,
     builder:
         (context) => PopScope(
